@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #132437;
+            color: white;
+            padding: 20px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #ff7d14;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Reservation Confirmation</h2>
+    </div>
+    <div class="content">
+        <p>Dear {{Customer Name}},</p>
+        <p>Thank you for your reservation at {{Fair Name}}. Your booking details are as follows:</p>
+        <p><strong>Reservation ID:</strong> {{Reservation ID}}</p>
+        <p><strong>Date:</strong> {{Date}}</p>
+        <p><strong>Location:</strong> {{Location}}</p>
+        <p>We look forward to welcoming you. Please confirm your reservation by clicking the button below.</p>
+        <a href="{{Confirmation Link}}" class="button">Confirm Reservation</a>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 Mon Entrée Gratuite. All rights reserved.</p>
+    </div>
+</div>
+</body>
+
+</html>
