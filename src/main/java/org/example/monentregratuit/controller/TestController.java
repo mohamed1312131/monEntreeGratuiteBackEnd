@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
     private JavaMailSender mailSender;
 
+    @GetMapping("/api/health")
+    public String health() {
+        return "OK";
+    }
+
     @GetMapping("/test-email")
     public String testEmail() {
         SimpleMailMessage message = new SimpleMailMessage();

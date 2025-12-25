@@ -64,6 +64,9 @@ public class SecurityConfig {
                 // Authentication endpoints - public
                 .requestMatchers("/api/auth/**").permitAll()
                 
+                // Health check endpoint - public
+                .requestMatchers("/api/health").permitAll()
+                
                 // Frontoffice public endpoints - no authentication required
                 .requestMatchers("/api/sliders/active").permitAll()
                 .requestMatchers("/api/sliders/ordered").permitAll()
