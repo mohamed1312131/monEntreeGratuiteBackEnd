@@ -152,8 +152,8 @@ public class ReservationService {
         dto.setId(reservation.getId());
         dto.setFoireId(reservation.getFoire().getId());
 
-        // Since foireDate is stored as a String in the Foire entity, use it directly.
-        dto.setFoireDate(reservation.getFoire().getDate());
+        // Get date ranges from the new Foire structure
+        dto.setFoireDateRanges(reservation.getFoire().getDateRangesList());
 
         dto.setFoireName(reservation.getFoire().getName());
         dto.setName(reservation.getName());
@@ -195,7 +195,7 @@ public class ReservationService {
         dto.setCity(reservation.getCity());
         dto.setName(reservation.getName());
         dto.setFoireName(reservation.getFoire().getName());
-        dto.setFoireDate(reservation.getFoire().getDate());
+        dto.setFoireDateRanges(reservation.getFoire().getDateRangesList());
         return dto;
     }
 
@@ -204,6 +204,11 @@ public class ReservationService {
         String templateKey = "confirmation-email2"; // Ensure this template exists in the templates directory
 
         EmailReservationDTO dto = convertToEmailReservationDTO(reservation);
+
+        // Format date ranges for email display
+        String foireDatesStr = dto.getFoireDateRanges().stream()
+                .map(range -> range.getStartDate() + " - " + range.getEndDate())
+                .collect(Collectors.joining(", "));
 
         Map<String, String> variables = new HashMap<>();
         variables.put("Customer Name", dto.getName());
@@ -214,7 +219,7 @@ public class ReservationService {
         variables.put("Phone", dto.getPhone());
         variables.put("Email", dto.getEmail());
         variables.put("Age Category", dto.getAgeCategory().toString());
-        variables.put("Foire Date", dto.getFoireDate().toString());
+        variables.put("Foire Date", foireDatesStr);
         variables.put("Confirmation Link", backendUrl + "/api/reservations/confirm/" + reservation.getId());
 
         emailService.sendBulkEmails(Collections.singletonList(dto.getEmail()), templateKey, variables);

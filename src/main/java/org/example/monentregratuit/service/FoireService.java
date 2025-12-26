@@ -167,10 +167,21 @@ public class FoireService {
         List<Foire> allFoires = foireRepository.findAll();
         LocalDateTime now = LocalDateTime.now();
         for (Foire foire : allFoires) {
-            // Skip if date is null (using new dateRanges field)
-            if (foire.getDate() != null && foire.getDate().plusHours(24).isBefore(now) && foire.getIsActive()) {
-                foire.setIsActive(false);
-                foireRepository.save(foire);
+            // Check if all date ranges have expired
+            List<Foire.DateRange> dateRanges = foire.getDateRangesList();
+            if (!dateRanges.isEmpty() && foire.getIsActive()) {
+                boolean allExpired = dateRanges.stream().allMatch(range -> {
+                    try {
+                        LocalDateTime endDate = java.time.LocalDate.parse(range.getEndDate()).atTime(23, 59, 59);
+                        return endDate.plusHours(24).isBefore(now);
+                    } catch (Exception e) {
+                        return false;
+                    }
+                });
+                if (allExpired) {
+                    foire.setIsActive(false);
+                    foireRepository.save(foire);
+                }
             }
         }
     }
@@ -182,6 +193,11 @@ public class FoireService {
                 .collect(Collectors.toList());
 
         for (EmailReservationDTO dto : emailReservationDTOs) {
+            // Format date ranges for email display
+            String foireDatesStr = dto.getFoireDateRanges().stream()
+                    .map(range -> range.getStartDate() + " - " + range.getEndDate())
+                    .collect(java.util.stream.Collectors.joining(", "));
+            
             Map<String, String> variables = Map.of(
                     "Customer Name", dto.getName(),
                     "Fair Name", dto.getFoireName(),
@@ -189,7 +205,7 @@ public class FoireService {
                     "Location", dto.getCity(),
                     "Phone", dto.getPhone(),
                     "Email", dto.getEmail(),
-                    "Foire Date", dto.getFoireDate().toString()
+                    "Foire Date", foireDatesStr
             );
             emailTemplateService.sendBulkEmails(Collections.singletonList(dto.getEmail()), "reminder_template", variables);
         }
@@ -204,7 +220,7 @@ public class FoireService {
         dto.setCity(reservation.getCity());
         dto.setName(reservation.getName());
         dto.setFoireName(reservation.getFoire().getName());
-        dto.setFoireDate(reservation.getFoire().getDate());
+        dto.setFoireDateRanges(reservation.getFoire().getDateRangesList());
         return dto;
     }
     public Map<String, Long> countReservationsByAgeCategory(Long foireId) {
@@ -229,13 +245,24 @@ public class FoireService {
         List<Foire> allFoires = foireRepository.findAll();
         LocalDateTime now = LocalDateTime.now();
         for (Foire foire : allFoires) {
-            // Skip if date is null (using new dateRanges field)
-            if (foire.getDate() != null && foire.getDate().plusHours(24).isBefore(now)) {
-                List<Reservations> reservations = foire.getReservations();
-                for (Reservations reservation : reservations) {
-                    if (reservation.getStatus() != ReservationStatus.COMPLETED && reservation.getStatus() != ReservationStatus.BLOCKED) {
-                        reservation.setStatus(ReservationStatus.COMPLETED);
-                        reservationsRepository.save(reservation);
+            // Check if all date ranges have expired
+            List<Foire.DateRange> dateRanges = foire.getDateRangesList();
+            if (!dateRanges.isEmpty()) {
+                boolean allExpired = dateRanges.stream().allMatch(range -> {
+                    try {
+                        LocalDateTime endDate = java.time.LocalDate.parse(range.getEndDate()).atTime(23, 59, 59);
+                        return endDate.plusHours(24).isBefore(now);
+                    } catch (Exception e) {
+                        return false;
+                    }
+                });
+                if (allExpired) {
+                    List<Reservations> reservations = foire.getReservations();
+                    for (Reservations reservation : reservations) {
+                        if (reservation.getStatus() != ReservationStatus.COMPLETED && reservation.getStatus() != ReservationStatus.BLOCKED) {
+                            reservation.setStatus(ReservationStatus.COMPLETED);
+                            reservationsRepository.save(reservation);
+                        }
                     }
                 }
             }

@@ -2,8 +2,9 @@ package org.example.monentregratuit.DTO;
 
 import lombok.Data;
 import org.example.monentregratuit.entity.AgeCategory;
+import org.example.monentregratuit.entity.Foire;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class EmailReservationDTO {
@@ -14,5 +15,5 @@ public class EmailReservationDTO {
     private String city;
     private String name;
     private String foireName;
-    private LocalDateTime foireDate;
+    private List<Foire.DateRange> foireDateRanges;
 }
