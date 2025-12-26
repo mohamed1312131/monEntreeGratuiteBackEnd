@@ -83,6 +83,12 @@ public class SecurityConfig {
                 // Public newsletter subscribe endpoint - no authentication required
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/newsletter-subscribers/subscribe").permitAll()
                 
+                // Public visit tracking endpoint - no authentication required
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/visits/track").permitAll()
+                
+                // Visit statistics endpoints - require authentication (admin only)
+                .requestMatchers("/api/visits/**").authenticated()
+                
                 // Newsletter subscriber endpoints - require authentication (admin only)
                 .requestMatchers("/api/newsletter-subscribers/**").authenticated()
                 

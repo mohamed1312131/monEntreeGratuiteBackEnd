@@ -7,6 +7,7 @@ import org.example.monentregratuit.repo.UserVisitRepository;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,6 +44,7 @@ public class UserVisitService {
             return "Unknown";
         }
     }
+    
     public List<Long> getMonthlyUserEntries(int year) {
         return IntStream.rangeClosed(1, 12)
                 .mapToObj(month -> {
@@ -52,6 +54,32 @@ public class UserVisitService {
                     return repository.countByVisitDateBetween(start.atStartOfDay(), end.atTime(23, 59, 59));
                 })
                 .collect(Collectors.toList());
+    }
+    
+    public List<UserVisit> getAllVisits() {
+        return repository.findAll();
+    }
+    
+    public Map<String, Long> getVisitsByCountry() {
+        List<Object[]> results = repository.countByCountry();
+        Map<String, Long> countryStats = new HashMap<>();
+        for (Object[] result : results) {
+            countryStats.put((String) result[0], (Long) result[1]);
+        }
+        return countryStats;
+    }
+    
+    public Map<String, Long> getVisitsByCountryAndYear(int year) {
+        List<Object[]> results = repository.countByCountryAndYear(year);
+        Map<String, Long> countryStats = new HashMap<>();
+        for (Object[] result : results) {
+            countryStats.put((String) result[0], (Long) result[1]);
+        }
+        return countryStats;
+    }
+    
+    public long getTotalVisits() {
+        return repository.count();
     }
 }
 
