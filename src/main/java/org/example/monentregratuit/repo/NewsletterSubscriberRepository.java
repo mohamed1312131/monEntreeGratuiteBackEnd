@@ -5,6 +5,7 @@ import org.example.monentregratuit.entity.NewsletterSubscriber.SubscriptionStatu
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface NewsletterSubscriberRepository extends JpaRepository<NewsletterSubscriber, Long> {
+public interface NewsletterSubscriberRepository extends JpaRepository<NewsletterSubscriber, Long>, JpaSpecificationExecutor<NewsletterSubscriber> {
     
     Optional<NewsletterSubscriber> findByEmail(String email);
     
@@ -25,24 +26,6 @@ public interface NewsletterSubscriberRepository extends JpaRepository<Newsletter
     List<NewsletterSubscriber> findByStatus(SubscriptionStatus status);
     
     Page<NewsletterSubscriber> findByStatus(SubscriptionStatus status, Pageable pageable);
-    
-    @Query(value = "SELECT ns FROM NewsletterSubscriber ns WHERE " +
-           "(:status IS NULL OR ns.status = :status) AND " +
-           "(:search IS NULL OR LOWER(ns.email) LIKE :search OR LOWER(ns.name) LIKE :search) AND " +
-           "(:dateFrom IS NULL OR ns.subscribedAt >= :dateFrom) AND " +
-           "(:dateTo IS NULL OR ns.subscribedAt <= :dateTo)",
-           countQuery = "SELECT COUNT(ns) FROM NewsletterSubscriber ns WHERE " +
-           "(:status IS NULL OR ns.status = :status) AND " +
-           "(:search IS NULL OR LOWER(ns.email) LIKE :search OR LOWER(ns.name) LIKE :search) AND " +
-           "(:dateFrom IS NULL OR ns.subscribedAt >= :dateFrom) AND " +
-           "(:dateTo IS NULL OR ns.subscribedAt <= :dateTo)")
-    Page<NewsletterSubscriber> findByFilters(
-        @Param("status") SubscriptionStatus status,
-        @Param("search") String search,
-        @Param("dateFrom") LocalDateTime dateFrom,
-        @Param("dateTo") LocalDateTime dateTo,
-        Pageable pageable
-    );
     
     @Query("SELECT COUNT(ns) FROM NewsletterSubscriber ns WHERE ns.status = :status")
     long countByStatus(@Param("status") SubscriptionStatus status);

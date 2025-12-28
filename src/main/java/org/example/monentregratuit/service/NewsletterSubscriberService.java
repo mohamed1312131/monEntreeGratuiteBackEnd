@@ -1,6 +1,7 @@
 package org.example.monentregratuit.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.monentregratuit.DTO.NewsletterSubscriberDTO;
 import org.example.monentregratuit.entity.NewsletterSubscriber;
@@ -9,10 +10,12 @@ import org.example.monentregratuit.repo.NewsletterSubscriberRepository;
 import org.example.monentregratuit.repo.SubscriptionAuditLogRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -202,9 +205,32 @@ public class NewsletterSubscriberService {
             LocalDateTime dateTo,
             Pageable pageable) {
         
-        String searchTerm = (search != null && !search.trim().isEmpty()) ? "%" + search.trim().toLowerCase() + "%" : null;
+        Specification<NewsletterSubscriber> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (search != null && !search.trim().isEmpty()) {
+                String searchTerm = "%" + search.trim().toLowerCase() + "%";
+                Predicate emailPredicate = cb.like(cb.lower(root.get("email")), searchTerm);
+                Predicate namePredicate = cb.like(cb.lower(root.get("name")), searchTerm);
+                predicates.add(cb.or(emailPredicate, namePredicate));
+            }
+
+            if (dateFrom != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("subscribedAt"), dateFrom));
+            }
+
+            if (dateTo != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("subscribedAt"), dateTo));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
         
-        return subscriberRepository.findByFilters(status, searchTerm, dateFrom, dateTo, pageable)
+        return subscriberRepository.findAll(spec, pageable)
                 .map(this::convertToDTO);
     }
 
