@@ -1,9 +1,12 @@
 package org.example.monentregratuit.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "about_us")
@@ -34,6 +37,11 @@ public class AboutUs {
 
     @Column(name = "exhibitors_count")
     private String exhibitorsCount;
+
+    @OneToMany(mappedBy = "aboutUs", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    @OrderBy("displayOrder ASC")
+    private List<AboutUsQA> qaList = new ArrayList<>();
 
     @Column(nullable = false)
     private Boolean isActive = true;

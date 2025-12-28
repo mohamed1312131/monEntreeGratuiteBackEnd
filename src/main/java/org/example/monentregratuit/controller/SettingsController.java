@@ -2,6 +2,7 @@ package org.example.monentregratuit.controller;
 
 import lombok.AllArgsConstructor;
 import org.example.monentregratuit.entity.AboutUs;
+import org.example.monentregratuit.entity.AboutUsQA;
 import org.example.monentregratuit.entity.SocialLinks;
 import org.example.monentregratuit.entity.Video;
 import org.example.monentregratuit.service.SettingsService;
@@ -135,5 +136,32 @@ public class SettingsController {
     public ResponseEntity<SocialLinks> updateSocialLinks(@RequestBody SocialLinks socialLinks) {
         SocialLinks updated = settingsService.updateSocialLinks(socialLinks);
         return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/about-us/{aboutUsId}/qa")
+    public List<AboutUsQA> getQAByAboutUsId(@PathVariable Long aboutUsId) {
+        return settingsService.getQAByAboutUsId(aboutUsId);
+    }
+
+    @PostMapping("/about-us/{aboutUsId}/qa")
+    public ResponseEntity<AboutUsQA> createQA(@PathVariable Long aboutUsId, @RequestBody AboutUsQA qa) {
+        AboutUsQA created = settingsService.createQA(aboutUsId, qa);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/qa/{qaId}")
+    public ResponseEntity<AboutUsQA> updateQA(@PathVariable Long qaId, @RequestBody AboutUsQA qa) {
+        try {
+            AboutUsQA updated = settingsService.updateQA(qaId, qa);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/qa/{qaId}")
+    public ResponseEntity<Void> deleteQA(@PathVariable Long qaId) {
+        settingsService.deleteQA(qaId);
+        return ResponseEntity.ok().build();
     }
 }

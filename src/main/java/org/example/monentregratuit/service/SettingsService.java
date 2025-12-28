@@ -2,9 +2,11 @@ package org.example.monentregratuit.service;
 
 import lombok.AllArgsConstructor;
 import org.example.monentregratuit.entity.AboutUs;
+import org.example.monentregratuit.entity.AboutUsQA;
 import org.example.monentregratuit.entity.SocialLinks;
 import org.example.monentregratuit.entity.Video;
 import org.example.monentregratuit.repo.AboutUsRepository;
+import org.example.monentregratuit.repo.AboutUsQARepository;
 import org.example.monentregratuit.repo.SocialLinksRepository;
 import org.example.monentregratuit.repo.VideoRepository;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.List;
 public class SettingsService {
 
     private final AboutUsRepository aboutUsRepository;
+    private final AboutUsQARepository aboutUsQARepository;
     private final VideoRepository videoRepository;
     private final SocialLinksRepository socialLinksRepository;
 
@@ -33,7 +36,28 @@ public class SettingsService {
                 .orElseThrow(() -> new RuntimeException("About Us section not found with ID: " + id));
     }
 
-    public AboutUs createAboutUs(AboutUs aboutUs) {
+    public AboutUs createAboutUs(AboutUs aboutUsDetails) {
+        AboutUs aboutUs = new AboutUs();
+        aboutUs.setTitle(aboutUsDetails.getTitle());
+        aboutUs.setDescription(aboutUsDetails.getDescription());
+        aboutUs.setImageUrl(aboutUsDetails.getImageUrl());
+        aboutUs.setVideoUrl(aboutUsDetails.getVideoUrl());
+        aboutUs.setIsActive(aboutUsDetails.getIsActive());
+        aboutUs.setEventsCount(aboutUsDetails.getEventsCount());
+        aboutUs.setVisitorsCount(aboutUsDetails.getVisitorsCount());
+        aboutUs.setExhibitorsCount(aboutUsDetails.getExhibitorsCount());
+        
+        if (aboutUsDetails.getQaList() != null && !aboutUsDetails.getQaList().isEmpty()) {
+            for (AboutUsQA qaDetails : aboutUsDetails.getQaList()) {
+                AboutUsQA qa = new AboutUsQA();
+                qa.setAboutUs(aboutUs);
+                qa.setQuestion(qaDetails.getQuestion());
+                qa.setResponse(qaDetails.getResponse());
+                qa.setDisplayOrder(qaDetails.getDisplayOrder());
+                aboutUs.getQaList().add(qa);
+            }
+        }
+        
         return aboutUsRepository.save(aboutUs);
     }
 
@@ -44,6 +68,19 @@ public class SettingsService {
         aboutUs.setImageUrl(aboutUsDetails.getImageUrl());
         aboutUs.setVideoUrl(aboutUsDetails.getVideoUrl());
         aboutUs.setIsActive(aboutUsDetails.getIsActive());
+        
+        aboutUs.getQaList().clear();
+        if (aboutUsDetails.getQaList() != null && !aboutUsDetails.getQaList().isEmpty()) {
+            for (AboutUsQA qaDetails : aboutUsDetails.getQaList()) {
+                AboutUsQA qa = new AboutUsQA();
+                qa.setAboutUs(aboutUs);
+                qa.setQuestion(qaDetails.getQuestion());
+                qa.setResponse(qaDetails.getResponse());
+                qa.setDisplayOrder(qaDetails.getDisplayOrder());
+                aboutUs.getQaList().add(qa);
+            }
+        }
+        
         return aboutUsRepository.save(aboutUs);
     }
 
@@ -118,5 +155,28 @@ public class SettingsService {
         socialLinks.setTwitter(socialLinksDetails.getTwitter());
         socialLinks.setYoutube(socialLinksDetails.getYoutube());
         return socialLinksRepository.save(socialLinks);
+    }
+
+    public List<AboutUsQA> getQAByAboutUsId(Long aboutUsId) {
+        return aboutUsQARepository.findByAboutUsIdOrderByDisplayOrderAsc(aboutUsId);
+    }
+
+    public AboutUsQA createQA(Long aboutUsId, AboutUsQA qa) {
+        AboutUs aboutUs = getAboutUsById(aboutUsId);
+        qa.setAboutUs(aboutUs);
+        return aboutUsQARepository.save(qa);
+    }
+
+    public AboutUsQA updateQA(Long qaId, AboutUsQA qaDetails) {
+        AboutUsQA qa = aboutUsQARepository.findById(qaId)
+                .orElseThrow(() -> new RuntimeException("Q&A not found with ID: " + qaId));
+        qa.setQuestion(qaDetails.getQuestion());
+        qa.setResponse(qaDetails.getResponse());
+        qa.setDisplayOrder(qaDetails.getDisplayOrder());
+        return aboutUsQARepository.save(qa);
+    }
+
+    public void deleteQA(Long qaId) {
+        aboutUsQARepository.deleteById(qaId);
     }
 }
