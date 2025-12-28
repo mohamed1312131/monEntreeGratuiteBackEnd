@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/settings")
-@CrossOrigin(origins = "${app.frontend.url}")
 @AllArgsConstructor
 public class SettingsController {
 

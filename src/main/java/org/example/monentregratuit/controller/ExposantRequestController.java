@@ -14,7 +14,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/exposant-requests")
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
 public class ExposantRequestController {
 
     private final ExposantRequestService exposantRequestService;

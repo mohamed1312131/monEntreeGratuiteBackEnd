@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/sliders")
-@CrossOrigin(origins = "${app.frontend.url}")
 @AllArgsConstructor
 public class SliderController {
     private final SliderService sliderService;

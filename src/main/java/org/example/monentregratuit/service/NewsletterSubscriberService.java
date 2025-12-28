@@ -200,19 +200,18 @@ public class NewsletterSubscriberService {
             LocalDateTime dateFrom,
             LocalDateTime dateTo,
             Pageable pageable) {
-        String statusString = status != null ? status.name() : null;
-        return subscriberRepository.findByFilters(statusString, search, dateFrom, dateTo, pageable)
+        return subscriberRepository.findByFilters(status, search, dateFrom, dateTo, pageable)
                 .map(this::convertToDTO);
     }
 
     public List<NewsletterSubscriberDTO> getActiveSubscribers() {
-        return subscriberRepository.findAllActiveSubscribers().stream()
+        return subscriberRepository.findAllActiveSubscribers(NewsletterSubscriber.SubscriptionStatus.ACTIVE).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public Page<NewsletterSubscriberDTO> getActiveSubscribers(Pageable pageable) {
-        return subscriberRepository.findAllActiveSubscribers(pageable).map(this::convertToDTO);
+        return subscriberRepository.findAllActiveSubscribers(NewsletterSubscriber.SubscriptionStatus.ACTIVE, pageable).map(this::convertToDTO);
     }
 
     public NewsletterSubscriberDTO getSubscriberById(Long id) {

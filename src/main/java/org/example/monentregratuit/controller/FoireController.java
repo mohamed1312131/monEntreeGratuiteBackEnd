@@ -17,7 +17,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/foires")
-@CrossOrigin(origins = "${app.frontend.url}")
 public class FoireController {
 
     @Autowired

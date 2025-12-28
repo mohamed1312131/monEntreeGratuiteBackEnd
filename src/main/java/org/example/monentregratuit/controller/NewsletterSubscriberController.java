@@ -22,7 +22,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/newsletter-subscribers")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "${app.frontend.url}")
 public class NewsletterSubscriberController {
 
     private final NewsletterSubscriberService subscriberService;

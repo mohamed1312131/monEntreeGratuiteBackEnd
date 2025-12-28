@@ -25,20 +25,14 @@ public interface NewsletterSubscriberRepository extends JpaRepository<Newsletter
     
     Page<NewsletterSubscriber> findByStatus(NewsletterSubscriber.SubscriptionStatus status, Pageable pageable);
     
-    @Query(value = "SELECT * FROM newsletter_subscribers ns WHERE " +
-           "(:status IS NULL OR ns.status = CAST(:status AS VARCHAR)) AND " +
-           "(COALESCE(:search, '') = '' OR LOWER(ns.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(ns.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
-           "(:dateFrom IS NULL OR ns.subscribed_at >= :dateFrom) AND " +
-           "(:dateTo IS NULL OR ns.subscribed_at <= :dateTo) " +
-           "ORDER BY ns.subscribed_at DESC",
-           countQuery = "SELECT COUNT(*) FROM newsletter_subscribers ns WHERE " +
-           "(:status IS NULL OR ns.status = CAST(:status AS VARCHAR)) AND " +
-           "(COALESCE(:search, '') = '' OR LOWER(ns.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(ns.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
-           "(:dateFrom IS NULL OR ns.subscribed_at >= :dateFrom) AND " +
-           "(:dateTo IS NULL OR ns.subscribed_at <= :dateTo)",
-           nativeQuery = true)
+    @Query("SELECT ns FROM NewsletterSubscriber ns WHERE " +
+           "(:status IS NULL OR ns.status = :status) AND " +
+           "(:search IS NULL OR :search = '' OR LOWER(ns.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(ns.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:dateFrom IS NULL OR ns.subscribedAt >= :dateFrom) AND " +
+           "(:dateTo IS NULL OR ns.subscribedAt <= :dateTo) " +
+           "ORDER BY ns.subscribedAt DESC")
     Page<NewsletterSubscriber> findByFilters(
-        @Param("status") String status,
+        @Param("status") NewsletterSubscriber.SubscriptionStatus status,
         @Param("search") String search,
         @Param("dateFrom") LocalDateTime dateFrom,
         @Param("dateTo") LocalDateTime dateTo,
@@ -48,9 +42,9 @@ public interface NewsletterSubscriberRepository extends JpaRepository<Newsletter
     @Query("SELECT COUNT(ns) FROM NewsletterSubscriber ns WHERE ns.status = :status")
     long countByStatus(@Param("status") NewsletterSubscriber.SubscriptionStatus status);
     
-    @Query("SELECT ns FROM NewsletterSubscriber ns WHERE ns.status = 'ACTIVE' AND ns.emailBounced = false")
-    List<NewsletterSubscriber> findAllActiveSubscribers();
+    @Query("SELECT ns FROM NewsletterSubscriber ns WHERE ns.status = :status AND ns.emailBounced = false")
+    List<NewsletterSubscriber> findAllActiveSubscribers(@Param("status") NewsletterSubscriber.SubscriptionStatus status);
     
-    @Query("SELECT ns FROM NewsletterSubscriber ns WHERE ns.status = 'ACTIVE' AND ns.emailBounced = false")
-    Page<NewsletterSubscriber> findAllActiveSubscribers(Pageable pageable);
+    @Query("SELECT ns FROM NewsletterSubscriber ns WHERE ns.status = :status AND ns.emailBounced = false")
+    Page<NewsletterSubscriber> findAllActiveSubscribers(@Param("status") NewsletterSubscriber.SubscriptionStatus status, Pageable pageable);
 }

@@ -10,7 +10,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "${app.frontend.url}")
 public class AuthController {
 
     private final AdminAuthService adminAuthService;
