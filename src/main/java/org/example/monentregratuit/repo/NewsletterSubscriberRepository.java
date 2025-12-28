@@ -1,6 +1,7 @@
 package org.example.monentregratuit.repo;
 
 import org.example.monentregratuit.entity.NewsletterSubscriber;
+import org.example.monentregratuit.entity.NewsletterSubscriber.SubscriptionStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,18 +22,22 @@ public interface NewsletterSubscriberRepository extends JpaRepository<Newsletter
     
     boolean existsByEmail(String email);
     
-    List<NewsletterSubscriber> findByStatus(NewsletterSubscriber.SubscriptionStatus status);
+    List<NewsletterSubscriber> findByStatus(SubscriptionStatus status);
     
-    Page<NewsletterSubscriber> findByStatus(NewsletterSubscriber.SubscriptionStatus status, Pageable pageable);
+    Page<NewsletterSubscriber> findByStatus(SubscriptionStatus status, Pageable pageable);
     
-    @Query("SELECT ns FROM NewsletterSubscriber ns WHERE " +
+    @Query(value = "SELECT ns FROM NewsletterSubscriber ns WHERE " +
            "(:status IS NULL OR ns.status = :status) AND " +
-           "(:search IS NULL OR :search = '' OR LOWER(ns.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(ns.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:search IS NULL OR LOWER(ns.email) LIKE :search OR LOWER(ns.name) LIKE :search) AND " +
            "(:dateFrom IS NULL OR ns.subscribedAt >= :dateFrom) AND " +
-           "(:dateTo IS NULL OR ns.subscribedAt <= :dateTo) " +
-           "ORDER BY ns.subscribedAt DESC")
+           "(:dateTo IS NULL OR ns.subscribedAt <= :dateTo)",
+           countQuery = "SELECT COUNT(ns) FROM NewsletterSubscriber ns WHERE " +
+           "(:status IS NULL OR ns.status = :status) AND " +
+           "(:search IS NULL OR LOWER(ns.email) LIKE :search OR LOWER(ns.name) LIKE :search) AND " +
+           "(:dateFrom IS NULL OR ns.subscribedAt >= :dateFrom) AND " +
+           "(:dateTo IS NULL OR ns.subscribedAt <= :dateTo)")
     Page<NewsletterSubscriber> findByFilters(
-        @Param("status") NewsletterSubscriber.SubscriptionStatus status,
+        @Param("status") SubscriptionStatus status,
         @Param("search") String search,
         @Param("dateFrom") LocalDateTime dateFrom,
         @Param("dateTo") LocalDateTime dateTo,
@@ -40,11 +45,11 @@ public interface NewsletterSubscriberRepository extends JpaRepository<Newsletter
     );
     
     @Query("SELECT COUNT(ns) FROM NewsletterSubscriber ns WHERE ns.status = :status")
-    long countByStatus(@Param("status") NewsletterSubscriber.SubscriptionStatus status);
+    long countByStatus(@Param("status") SubscriptionStatus status);
     
     @Query("SELECT ns FROM NewsletterSubscriber ns WHERE ns.status = :status AND ns.emailBounced = false")
-    List<NewsletterSubscriber> findAllActiveSubscribers(@Param("status") NewsletterSubscriber.SubscriptionStatus status);
+    List<NewsletterSubscriber> findAllActiveSubscribers(@Param("status") SubscriptionStatus status);
     
     @Query("SELECT ns FROM NewsletterSubscriber ns WHERE ns.status = :status AND ns.emailBounced = false")
-    Page<NewsletterSubscriber> findAllActiveSubscribers(@Param("status") NewsletterSubscriber.SubscriptionStatus status, Pageable pageable);
+    Page<NewsletterSubscriber> findAllActiveSubscribers(@Param("status") SubscriptionStatus status, Pageable pageable);
 }

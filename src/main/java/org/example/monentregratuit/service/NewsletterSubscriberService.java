@@ -194,13 +194,17 @@ public class NewsletterSubscriberService {
         return subscriberRepository.findByStatus(status, pageable).map(this::convertToDTO);
     }
 
+    @Transactional(readOnly = true)
     public Page<NewsletterSubscriberDTO> searchSubscribers(
             NewsletterSubscriber.SubscriptionStatus status,
             String search,
             LocalDateTime dateFrom,
             LocalDateTime dateTo,
             Pageable pageable) {
-        return subscriberRepository.findByFilters(status, search, dateFrom, dateTo, pageable)
+        
+        String searchTerm = (search != null && !search.trim().isEmpty()) ? "%" + search.trim().toLowerCase() + "%" : null;
+        
+        return subscriberRepository.findByFilters(status, searchTerm, dateFrom, dateTo, pageable)
                 .map(this::convertToDTO);
     }
 

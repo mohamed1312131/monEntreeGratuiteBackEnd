@@ -68,7 +68,7 @@ public class NewsletterSubscriberController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<NewsletterSubscriberDTO>> searchSubscribers(
+    public ResponseEntity<?> searchSubscribers(
             @RequestParam(required = false) NewsletterSubscriber.SubscriptionStatus status,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
@@ -76,10 +76,15 @@ public class NewsletterSubscriberController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
         
-        // Use unsorted Pageable since the native query has its own ORDER BY clause
-        Pageable pageable = PageRequest.of(page, size, Sort.unsorted());
-        
-        return ResponseEntity.ok(subscriberService.searchSubscribers(status, search, dateFrom, dateTo, pageable));
+        try {
+            // Default sort by subscribedAt DESC
+            Pageable pageable = PageRequest.of(page, size, Sort.by("subscribedAt").descending());
+            
+            return ResponseEntity.ok(subscriberService.searchSubscribers(status, search, dateFrom, dateTo, pageable));
+        } catch (Exception e) {
+            e.printStackTrace(); // Print stack trace to server logs
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage(), "cause", e.getCause() != null ? e.getCause().getMessage() : "Unknown"));
+        }
     }
 
     @GetMapping("/{id}")
