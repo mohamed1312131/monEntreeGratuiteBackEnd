@@ -84,8 +84,6 @@ public class NewsletterSubscriber {
 
     public enum SubscriptionStatus {
         ACTIVE,
-        UNSUBSCRIBED,
-        BOUNCED,
-        COMPLAINED
+        UNSUBSCRIBED
     }
 }

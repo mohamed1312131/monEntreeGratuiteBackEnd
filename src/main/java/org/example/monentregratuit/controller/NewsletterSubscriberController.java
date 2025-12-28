@@ -71,8 +71,6 @@ public class NewsletterSubscriberController {
     public ResponseEntity<?> searchSubscribers(
             @RequestParam(required = false) NewsletterSubscriber.SubscriptionStatus status,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
         
@@ -80,7 +78,7 @@ public class NewsletterSubscriberController {
             // Default sort by subscribedAt DESC
             Pageable pageable = PageRequest.of(page, size, Sort.by("subscribedAt").descending());
             
-            return ResponseEntity.ok(subscriberService.searchSubscribers(status, search, dateFrom, dateTo, pageable));
+            return ResponseEntity.ok(subscriberService.searchSubscribers(status, search, pageable));
         } catch (Exception e) {
             e.printStackTrace(); // Print stack trace to server logs
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage(), "cause", e.getCause() != null ? e.getCause().getMessage() : "Unknown"));
@@ -131,8 +129,6 @@ public class NewsletterSubscriberController {
         Map<String, Object> stats = new HashMap<>();
         stats.put("active", subscriberService.getSubscriberCount(NewsletterSubscriber.SubscriptionStatus.ACTIVE));
         stats.put("unsubscribed", subscriberService.getSubscriberCount(NewsletterSubscriber.SubscriptionStatus.UNSUBSCRIBED));
-        stats.put("bounced", subscriberService.getSubscriberCount(NewsletterSubscriber.SubscriptionStatus.BOUNCED));
-        stats.put("complained", subscriberService.getSubscriberCount(NewsletterSubscriber.SubscriptionStatus.COMPLAINED));
         return ResponseEntity.ok(stats);
     }
 
@@ -151,6 +147,29 @@ public class NewsletterSubscriberController {
             subscriberService.unsubscribeByEmail(email, reason, httpRequest);
             return ResponseEntity.ok(Map.of("message", "Successfully unsubscribed"));
         } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/send-bulk-email")
+    public ResponseEntity<?> sendBulkEmail(@RequestBody Map<String, Object> request) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Long> subscriberIds = (List<Long>) request.get("subscriberIds");
+            Long templateId = Long.valueOf(request.get("templateId").toString());
+
+            if (subscriberIds == null || subscriberIds.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Subscriber IDs are required"));
+            }
+
+            if (templateId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Template ID is required"));
+            }
+
+            Map<String, Object> result = subscriberService.sendBulkEmail(subscriberIds, templateId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

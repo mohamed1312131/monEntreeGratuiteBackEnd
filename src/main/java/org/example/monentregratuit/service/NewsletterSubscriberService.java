@@ -1,5 +1,6 @@
 package org.example.monentregratuit.service;
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,7 @@ public class NewsletterSubscriberService {
 
     private final NewsletterSubscriberRepository subscriberRepository;
     private final SubscriptionAuditLogRepository auditLogRepository;
+    private final EmailTemplateService emailTemplateService;
 
     @Transactional
     public NewsletterSubscriberDTO subscribe(String email, String name, String phone, String source, HttpServletRequest request) {
@@ -175,11 +178,7 @@ public class NewsletterSubscriberService {
     public void recordEmailBounce(String email) {
         subscriberRepository.findByEmail(email).ifPresent(subscriber -> {
             subscriber.setBounceCount(subscriber.getBounceCount() + 1);
-            
-            if (subscriber.getBounceCount() >= 3) {
-                subscriber.setEmailBounced(true);
-                subscriber.setStatus(NewsletterSubscriber.SubscriptionStatus.BOUNCED);
-            }
+            subscriber.setEmailBounced(true);
             
             subscriberRepository.save(subscriber);
 
@@ -201,8 +200,6 @@ public class NewsletterSubscriberService {
     public Page<NewsletterSubscriberDTO> searchSubscribers(
             NewsletterSubscriber.SubscriptionStatus status,
             String search,
-            LocalDateTime dateFrom,
-            LocalDateTime dateTo,
             Pageable pageable) {
         
         Specification<NewsletterSubscriber> spec = (root, query, cb) -> {
@@ -217,14 +214,6 @@ public class NewsletterSubscriberService {
                 Predicate emailPredicate = cb.like(cb.lower(root.get("email")), searchTerm);
                 Predicate namePredicate = cb.like(cb.lower(root.get("name")), searchTerm);
                 predicates.add(cb.or(emailPredicate, namePredicate));
-            }
-
-            if (dateFrom != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("subscribedAt"), dateFrom));
-            }
-
-            if (dateTo != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("subscribedAt"), dateTo));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -312,5 +301,53 @@ public class NewsletterSubscriberService {
     private String getUserAgent(HttpServletRequest request) {
         if (request == null) return null;
         return request.getHeader("User-Agent");
+    }
+
+    @Transactional
+    public Map<String, Object> sendBulkEmail(List<Long> subscriberIds, Long templateId) throws MessagingException {
+        List<NewsletterSubscriber> subscribers = subscriberRepository.findAllById(subscriberIds);
+        
+        // Filter out unsubscribed users - NEVER send to them
+        List<NewsletterSubscriber> activeSubscribers = subscribers.stream()
+                .filter(s -> s.getStatus() == NewsletterSubscriber.SubscriptionStatus.ACTIVE)
+                .collect(Collectors.toList());
+        
+        int successCount = 0;
+        int failedCount = 0;
+        List<String> errors = new ArrayList<>();
+        
+        for (NewsletterSubscriber subscriber : activeSubscribers) {
+            try {
+                emailTemplateService.sendEmailWithTemplate(
+                    templateId,
+                    subscriber.getEmail(),
+                    subscriber.getName(),
+                    null, // date
+                    null, // heure
+                    null, // code
+                    null  // foireName
+                );
+                
+                // Update email sent count
+                subscriber.setLastEmailSentAt(LocalDateTime.now());
+                subscriber.setTotalEmailsSent(subscriber.getTotalEmailsSent() + 1);
+                subscriberRepository.save(subscriber);
+                
+                successCount++;
+            } catch (Exception e) {
+                failedCount++;
+                errors.add("Failed to send to " + subscriber.getEmail() + ": " + e.getMessage());
+            }
+        }
+        
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("totalRequested", subscriberIds.size());
+        result.put("activeSubscribers", activeSubscribers.size());
+        result.put("unsubscribedFiltered", subscribers.size() - activeSubscribers.size());
+        result.put("successCount", successCount);
+        result.put("failedCount", failedCount);
+        result.put("errors", errors);
+        
+        return result;
     }
 }
