@@ -108,4 +108,15 @@ public class FoireController {
     public Map<String, Long> countReservationsByStatus(@PathVariable Long foireId) {
         return foireService.countReservationsByStatus(foireId);
     }
+
+    @PutMapping("/toggleDisponible/{countryCode}/{id}")
+    public ResponseEntity<?> toggleDisponible(@PathVariable String countryCode, @PathVariable Long id) {
+        try {
+            foireService.toggleDisponible(countryCode, id);
+            return ResponseEntity.ok().body(Map.of("message", "Disponible status toggled successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Failed to toggle disponible status: " + e.getMessage()));
+        }
+    }
 }

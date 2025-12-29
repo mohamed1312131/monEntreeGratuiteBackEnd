@@ -23,6 +23,8 @@ public class FoireDTO {
 
     private Boolean isActive;
 
+    private Boolean disponible;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDateTime createdAt;
 

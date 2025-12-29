@@ -61,6 +61,7 @@ public class FoireService {
         dto.setLocation(foire.getLocation());
         dto.setDateRanges(foire.getDateRangesList());
         dto.setIsActive(foire.getIsActive());
+        dto.setDisponible(foire.getDisponible());
         dto.setCreatedAt(foire.getCreatedAt());
         dto.setUpdatedAt(foire.getUpdatedAt());
         return dto;
@@ -150,6 +151,19 @@ public class FoireService {
         // Check if the fair belongs to the specified country
         if (foire.getCountryCode() != null && foire.getCountryCode().name().equalsIgnoreCase(countryCode)) {
             foire.setIsActive(false);
+            foireRepository.save(foire);
+        } else {
+            throw new IllegalArgumentException("Foire does not belong to the given country: " + countryCode);
+        }
+    }
+
+    public void toggleDisponible(String countryCode, long id) {
+        Foire foire = foireRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid fair ID: " + id));
+
+        // Check if the fair belongs to the specified country
+        if (foire.getCountryCode() != null && foire.getCountryCode().name().equalsIgnoreCase(countryCode)) {
+            foire.setDisponible(!foire.getDisponible());
             foireRepository.save(foire);
         } else {
             throw new IllegalArgumentException("Foire does not belong to the given country: " + countryCode);
