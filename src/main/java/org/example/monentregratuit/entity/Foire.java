@@ -65,7 +65,7 @@ public class Foire {
     
     private Boolean isPublished; // control public visibility
     
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Boolean disponible = true; // Indicates whether the fair is available for reservations
 
     private LocalDateTime publishAt; // schedule when to publish

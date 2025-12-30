@@ -6,6 +6,8 @@ import org.example.monentregratuit.DTO.NewsletterSubscriberDTO;
 import org.example.monentregratuit.entity.NewsletterSubscriber;
 import org.example.monentregratuit.entity.SubscriptionAuditLog;
 import org.example.monentregratuit.service.NewsletterSubscriberService;
+import org.example.monentregratuit.service.RecaptchaService;
+import org.example.monentregratuit.util.InputSanitizer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,10 +27,19 @@ import java.util.Map;
 public class NewsletterSubscriberController {
 
     private final NewsletterSubscriberService subscriberService;
+    private final RecaptchaService recaptchaService;
 
     @PostMapping("/subscribe")
     public ResponseEntity<?> subscribe(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         try {
+            // Validate reCAPTCHA if token is provided
+            String recaptchaToken = request.get("recaptchaToken");
+            if (recaptchaToken != null && !recaptchaToken.isEmpty()) {
+                if (!recaptchaService.verifyRecaptcha(recaptchaToken)) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "reCAPTCHA verification failed. Please try again."));
+                }
+            }
+
             String email = request.get("email");
             String name = request.get("name");
             String phone = request.get("phone");
@@ -36,6 +47,23 @@ public class NewsletterSubscriberController {
 
             if (email == null || email.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+            }
+
+            // Sanitize and validate email
+            email = InputSanitizer.sanitizeEmail(email);
+            if (!InputSanitizer.isValidEmail(email)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid email format"));
+            }
+            if (InputSanitizer.isDisposableEmail(email)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Disposable email addresses are not allowed"));
+            }
+
+            // Sanitize other inputs
+            if (name != null) {
+                name = InputSanitizer.sanitizeName(name);
+            }
+            if (phone != null) {
+                phone = InputSanitizer.sanitizePhone(phone);
             }
 
             NewsletterSubscriberDTO subscriber = subscriberService.subscribe(email, name, phone, source, httpRequest);
@@ -152,8 +180,16 @@ public class NewsletterSubscriberController {
     }
 
     @PostMapping("/send-bulk-email")
-    public ResponseEntity<?> sendBulkEmail(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<?> sendBulkEmail(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
+            // CRITICAL SECURITY: This endpoint MUST be authenticated
+            // The SecurityConfig should handle this, but we add an extra check
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Authentication required for bulk email operations"));
+            }
+
             @SuppressWarnings("unchecked")
             List<Long> subscriberIds = (List<Long>) request.get("subscriberIds");
             Long templateId = Long.valueOf(request.get("templateId").toString());
@@ -164,6 +200,11 @@ public class NewsletterSubscriberController {
 
             if (templateId == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Template ID is required"));
+            }
+
+            // Limit bulk email to reasonable size to prevent abuse
+            if (subscriberIds.size() > 1000) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Cannot send to more than 1000 subscribers at once"));
             }
 
             Map<String, Object> result = subscriberService.sendBulkEmail(subscriberIds, templateId);

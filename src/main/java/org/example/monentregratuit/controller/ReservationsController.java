@@ -1,11 +1,14 @@
 package org.example.monentregratuit.controller;
 
+import jakarta.validation.Valid;
 import org.example.monentregratuit.DTO.ResRevDTO;
 import org.example.monentregratuit.DTO.ReservationsDTO;
 import org.example.monentregratuit.entity.ReservationStatus;
 import org.example.monentregratuit.entity.Reservations;
 import org.example.monentregratuit.service.ReservationService;
+import org.example.monentregratuit.service.RecaptchaService;
 import org.example.monentregratuit.service.UserVisitService;
+import org.example.monentregratuit.util.InputSanitizer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
@@ -20,13 +23,15 @@ import java.util.stream.Collectors;
 public class ReservationsController {
     private final ReservationService reservationService;
     private final UserVisitService userVisitService;
+    private final RecaptchaService recaptchaService;
 
     @org.springframework.beans.factory.annotation.Value("${app.frontend.url}")
     private String frontendUrl;
 
-    public ReservationsController(ReservationService reservationService, UserVisitService userVisitService) {
+    public ReservationsController(ReservationService reservationService, UserVisitService userVisitService, RecaptchaService recaptchaService) {
         this.reservationService = reservationService;
         this.userVisitService = userVisitService;
+        this.recaptchaService = recaptchaService;
     }
 
     @GetMapping
@@ -45,8 +50,60 @@ public class ReservationsController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createReservation(@RequestBody ReservationsDTO reservationDTO) {
+    public ResponseEntity<?> createReservation(@Valid @RequestBody ReservationsDTO reservationDTO) {
         try {
+            // Validate reCAPTCHA if token is provided
+            String recaptchaToken = reservationDTO.getRecaptchaToken();
+            if (recaptchaToken != null && !recaptchaToken.isEmpty()) {
+                if (!recaptchaService.verifyRecaptcha(recaptchaToken)) {
+                    Map<String, String> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "reCAPTCHA verification failed. Please try again.");
+                    return ResponseEntity.status(400).body(errorResponse);
+                }
+            }
+
+            // Sanitize inputs
+            if (reservationDTO.getNom() != null) {
+                reservationDTO.setNom(InputSanitizer.sanitizeName(reservationDTO.getNom()));
+            }
+            if (reservationDTO.getPrenom() != null) {
+                reservationDTO.setPrenom(InputSanitizer.sanitizeName(reservationDTO.getPrenom()));
+            }
+            if (reservationDTO.getEmail() != null) {
+                String email = InputSanitizer.sanitizeEmail(reservationDTO.getEmail());
+                
+                // Validate email format
+                if (!InputSanitizer.isValidEmail(email)) {
+                    Map<String, String> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "Invalid email format.");
+                    return ResponseEntity.status(400).body(errorResponse);
+                }
+                
+                // Block disposable emails
+                if (InputSanitizer.isDisposableEmail(email)) {
+                    Map<String, String> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "Disposable email addresses are not allowed.");
+                    return ResponseEntity.status(400).body(errorResponse);
+                }
+                
+                reservationDTO.setEmail(email);
+            }
+            if (reservationDTO.getTelephone() != null) {
+                String phone = InputSanitizer.sanitizePhone(reservationDTO.getTelephone());
+                if (!InputSanitizer.isValidPhone(phone)) {
+                    Map<String, String> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "Invalid phone number format.");
+                    return ResponseEntity.status(400).body(errorResponse);
+                }
+                reservationDTO.setTelephone(phone);
+            }
+            if (reservationDTO.getSmsNumber() != null) {
+                reservationDTO.setSmsNumber(InputSanitizer.sanitizePhone(reservationDTO.getSmsNumber()));
+            }
+            if (reservationDTO.getVille() != null) {
+                reservationDTO.setVille(InputSanitizer.sanitizeName(reservationDTO.getVille()));
+            }
+
             Reservations createdReservation = reservationService.createReservation(reservationDTO);
             return ResponseEntity.status(201).body(createdReservation);
         } catch (IllegalArgumentException e) {
