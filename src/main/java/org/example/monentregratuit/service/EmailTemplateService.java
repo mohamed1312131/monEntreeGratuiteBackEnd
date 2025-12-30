@@ -259,7 +259,7 @@ public class EmailTemplateService {
     private void sendEmail(String to, String subject, String htmlContent) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-        helper.setFrom("mohamed1312131@gmail.com");
+        helper.setFrom(mailUsername);
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(htmlContent, true);

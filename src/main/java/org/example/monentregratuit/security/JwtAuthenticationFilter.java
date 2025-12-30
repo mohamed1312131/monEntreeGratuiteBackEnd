@@ -65,12 +65,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private boolean isPublicEndpoint(String path, String method) {
         // Public endpoints that don't require authentication
         if (path.startsWith("/api/auth/")) return true;
+        if (path.startsWith("/api/health")) return true;
         if (path.equals("/api/sliders/active")) return true;
         if (path.equals("/api/sliders/ordered")) return true;
         if (path.startsWith("/api/foires/getAllActive")) return true;
         if (path.equals("/api/settings/about-us/active")) return true;
         if (path.equals("/api/settings/videos/active")) return true;
         if (path.equals("/api/settings/social-links")) return true;
+        
+        // Public unsubscribe endpoint
+        if (path.startsWith("/api/public/unsubscribe")) return true;
+        
+        // Public newsletter subscribe endpoint
+        if (path.equals("/api/newsletter-subscribers/subscribe") && "POST".equalsIgnoreCase(method)) return true;
+        
+        // Public visit tracking endpoint
+        if (path.equals("/api/visits/track") && "POST".equalsIgnoreCase(method)) return true;
         
         // POST to /api/reservations is public
         if (path.equals("/api/reservations") && "POST".equalsIgnoreCase(method)) return true;
