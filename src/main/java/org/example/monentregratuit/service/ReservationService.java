@@ -94,7 +94,16 @@ public class ReservationService {
         reservation.setAgeCategory(reservationDTO.getAgeCategory());
         reservation.setCreatedAt(LocalDateTime.now());
 
-        return reservationRepository.save(reservation);
+        Reservations savedReservation = reservationRepository.save(reservation);
+        
+        // Send confirmation email after successful reservation
+        try {
+            sendReservationConfirmationEmail(savedReservation);
+        } catch (Exception e) {
+            System.err.println("Failed to send confirmation email for reservation " + savedReservation.getId() + ": " + e.getMessage());
+        }
+
+        return savedReservation;
     }
 
     /**
@@ -199,6 +208,20 @@ public class ReservationService {
         return dto;
     }
 
+
+    public void sendReservationConfirmationEmail(Reservations reservation) {
+        String templateName = "Accusé de réception";
+        
+        Map<String, String> variables = new HashMap<>();
+        variables.put("NOM", reservation.getName());
+        variables.put("FOIRE_NAME", reservation.getFoire().getName());
+        
+        emailService.sendBulkEmails(
+            Collections.singletonList(reservation.getEmail()), 
+            templateName, 
+            variables
+        );
+    }
 
     public void sendConfirmationEmail(Reservations reservation) {
         String templateKey = "confirmation-email2"; // Ensure this template exists in the templates directory
