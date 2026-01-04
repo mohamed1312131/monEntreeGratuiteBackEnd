@@ -53,6 +53,7 @@ public class EmailTemplateService {
                 .name(dto.getName())
                 .subject(dto.getSubject())
                 .htmlContent(dto.getHtmlContent())
+                .templateConfig(dto.getTemplateConfig())
                 .isActive(true)
                 .build();
 
@@ -84,6 +85,7 @@ public class EmailTemplateService {
         template.setName(dto.getName());
         template.setSubject(dto.getSubject());
         template.setHtmlContent(dto.getHtmlContent());
+        template.setTemplateConfig(dto.getTemplateConfig());
         if (dto.getIsActive() != null) {
             template.setIsActive(dto.getIsActive());
         }
@@ -190,6 +192,7 @@ public class EmailTemplateService {
                 .name(template.getName())
                 .subject(template.getSubject())
                 .htmlContent(template.getHtmlContent())
+                .templateConfig(template.getTemplateConfig())
                 .isActive(template.getIsActive())
                 .createdAt(template.getCreatedAt())
                 .updatedAt(template.getUpdatedAt())
