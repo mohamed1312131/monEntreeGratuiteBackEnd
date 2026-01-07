@@ -1,5 +1,6 @@
 package org.example.monentregratuit.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,10 +22,12 @@ public class EmailCampaign {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "foire_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Foire foire;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private EmailTemplate template;
 
     @Column(nullable = false)

@@ -1,5 +1,6 @@
 package org.example.monentregratuit.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,7 @@ public class EmailLog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "campaign_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private EmailCampaign campaign;
 
     @Column(name = "recipient_email", nullable = false)
@@ -27,6 +29,7 @@ public class EmailLog {
     // Optional: Link to ExcelUser if we want to track back to the specific user record
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "excel_user_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private ExcelUser excelUser;
 
     @Enumerated(EnumType.STRING)
