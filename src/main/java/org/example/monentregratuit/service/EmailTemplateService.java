@@ -244,6 +244,10 @@ public class EmailTemplateService {
                 .replace("{{CODE}}", code != null ? code : "")
                 .replace("{{FOIRE_NAME}}", foireName != null ? foireName : "");
 
+        // Add unsubscribe link
+        String unsubscribeUrl = backendUrl + "/api/public/unsubscribe/" + java.net.URLEncoder.encode(recipientEmail, java.nio.charset.StandardCharsets.UTF_8);
+        processedContent = processedContent.replace("{{UNSUBSCRIBE_LINK}}", unsubscribeUrl);
+
         // Inject tracking pixel if token is provided
         if (trackingToken != null && !trackingToken.isEmpty()) {
             String trackingUrl = backendUrl + "/api/track/open?token=" + trackingToken;
