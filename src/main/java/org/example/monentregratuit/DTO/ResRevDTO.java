@@ -21,4 +21,5 @@ public class ResRevDTO {
     private AgeCategory ageCategory;
     private ReservationStatus status;
     private String country;
+    private String createdAt;
 }

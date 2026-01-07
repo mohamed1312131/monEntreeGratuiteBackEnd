@@ -178,6 +178,10 @@ public class ReservationService {
 
         // Set the status from the reservation (assuming it's of type ReservationStatus)
         dto.setStatus(reservation.getStatus());
+        
+        if (reservation.getCreatedAt() != null) {
+            dto.setCreatedAt(reservation.getCreatedAt().toString());
+        }
 
         return dto;
     }

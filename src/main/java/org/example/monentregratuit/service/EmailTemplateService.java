@@ -42,6 +42,9 @@ public class EmailTemplateService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Autowired
+    private EmailBlocklistService blocklistService;
+
     @org.springframework.beans.factory.annotation.Value("${spring.mail.username}")
     private String mailUsername;
 
@@ -213,6 +216,11 @@ public class EmailTemplateService {
 
     public void sendEmailWithTemplate(Long templateId, String recipientEmail, String nom, String date, String heure, String code, String foireName) throws MessagingException {
         
+        // Check if email is blocked
+        if (blocklistService.isBlocked(recipientEmail)) {
+            throw new RuntimeException("Cannot send email to " + recipientEmail + ": Email is in blocklist (user unsubscribed)");
+        }
+        
         EmailTemplate template = emailTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new RuntimeException("Template not found with id: " + templateId));
 
@@ -260,6 +268,11 @@ public class EmailTemplateService {
     }
 
     private void sendEmail(String to, String subject, String htmlContent) throws MessagingException {
+        // Check if email is blocked
+        if (blocklistService.isBlocked(to)) {
+            throw new RuntimeException("Cannot send email to " + to + ": Email is in blocklist (user unsubscribed)");
+        }
+        
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setFrom(mailUsername);
