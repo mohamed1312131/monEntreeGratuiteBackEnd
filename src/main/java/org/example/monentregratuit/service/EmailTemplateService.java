@@ -48,8 +48,8 @@ public class EmailTemplateService {
     @org.springframework.beans.factory.annotation.Value("${spring.mail.username}")
     private String mailUsername;
 
-    @org.springframework.beans.factory.annotation.Value("${spring.mail.password}")
-    private String mailPassword;
+    @org.springframework.beans.factory.annotation.Value("${app.backend.url}")
+    private String backendUrl;
 
     public EmailTemplateDTO createTemplate(EmailTemplateDTO dto) {
         EmailTemplate template = EmailTemplate.builder()
@@ -215,6 +215,10 @@ public class EmailTemplateService {
     }
 
     public void sendEmailWithTemplate(Long templateId, String recipientEmail, String nom, String date, String heure, String code, String foireName) throws MessagingException {
+        sendEmailWithTemplateAndTracking(templateId, recipientEmail, nom, date, heure, code, foireName, null);
+    }
+
+    public void sendEmailWithTemplateAndTracking(Long templateId, String recipientEmail, String nom, String date, String heure, String code, String foireName, String trackingToken) throws MessagingException {
         
         // Check if email is blocked
         if (blocklistService.isBlocked(recipientEmail)) {
@@ -239,6 +243,41 @@ public class EmailTemplateService {
                 .replace("{{HEURE}}", heure != null ? heure : "")
                 .replace("{{CODE}}", code != null ? code : "")
                 .replace("{{FOIRE_NAME}}", foireName != null ? foireName : "");
+
+        // Inject tracking pixel if token is provided
+        if (trackingToken != null && !trackingToken.isEmpty()) {
+            String trackingUrl = backendUrl + "/api/track/open?token=" + trackingToken;
+            String pixelHtml = "<img src=\"" + trackingUrl + "\" width=\"1\" height=\"1\" style=\"display:none;\" alt=\"\" />";
+            
+            if (processedContent.contains("</body>")) {
+                processedContent = processedContent.replace("</body>", pixelHtml + "</body>");
+            } else {
+                processedContent += pixelHtml;
+            }
+            
+            // Link Tracking
+            try {
+                String clickTrackingBaseUrl = backendUrl + "/api/track/click?token=" + trackingToken + "&target=";
+                Pattern linkPattern = Pattern.compile("href=[\"'](http[^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
+                Matcher matcher = linkPattern.matcher(processedContent);
+                StringBuffer sb = new StringBuffer();
+                
+                while (matcher.find()) {
+                    String originalUrl = matcher.group(1);
+                    // Avoid double wrapping or wrapping unsubscribe links if they are handled separately (though here they are just links)
+                    // Also avoid wrapping the tracking pixel we just added (it doesn't have href, but good to be safe)
+                    if (!originalUrl.contains("/api/track/")) {
+                        String encodedUrl = java.net.URLEncoder.encode(originalUrl, "UTF-8");
+                        String wrappedUrl = clickTrackingBaseUrl + encodedUrl;
+                        matcher.appendReplacement(sb, "href=\"" + wrappedUrl + "\"");
+                    }
+                }
+                matcher.appendTail(sb);
+                processedContent = sb.toString();
+            } catch (Exception e) {
+                System.err.println("Error wrapping links for tracking: " + e.getMessage());
+            }
+        }
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

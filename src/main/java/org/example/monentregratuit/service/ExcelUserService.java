@@ -8,6 +8,9 @@ import org.example.monentregratuit.DTO.ExcelUploadResponse;
 import org.example.monentregratuit.DTO.ExcelUserDTO;
 import org.example.monentregratuit.entity.ExcelUser;
 import org.example.monentregratuit.entity.Foire;
+import org.example.monentregratuit.repo.EmailCampaignRepository;
+import org.example.monentregratuit.repo.EmailLogRepository;
+import org.example.monentregratuit.repo.EmailTemplateRepository;
 import org.example.monentregratuit.repo.ExcelUserRepository;
 import org.example.monentregratuit.repo.FoireRepository;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,9 @@ public class ExcelUserService {
     private final ExcelUserRepository excelUserRepository;
     private final FoireRepository foireRepository;
     private final EmailTemplateService emailTemplateService;
+    private final EmailCampaignRepository emailCampaignRepository;
+    private final EmailLogRepository emailLogRepository;
+    private final EmailTemplateRepository emailTemplateRepository;
 
     @org.springframework.beans.factory.annotation.Value("${app.frontend.url}")
     private String frontendUrl;
@@ -37,10 +43,16 @@ public class ExcelUserService {
 
     public ExcelUserService(ExcelUserRepository excelUserRepository, 
                            FoireRepository foireRepository,
-                           EmailTemplateService emailTemplateService) {
+                           EmailTemplateService emailTemplateService,
+                           EmailCampaignRepository emailCampaignRepository,
+                           EmailLogRepository emailLogRepository,
+                           EmailTemplateRepository emailTemplateRepository) {
         this.excelUserRepository = excelUserRepository;
         this.foireRepository = foireRepository;
         this.emailTemplateService = emailTemplateService;
+        this.emailCampaignRepository = emailCampaignRepository;
+        this.emailLogRepository = emailLogRepository;
+        this.emailTemplateRepository = emailTemplateRepository;
     }
 
     public ExcelUploadResponse uploadExcelFile(MultipartFile file, Long foireId) {
@@ -284,33 +296,80 @@ public class ExcelUserService {
                     .build();
             }
 
+            // Create Campaign
+            Foire foire = users.get(0).getFoire();
+            org.example.monentregratuit.entity.EmailTemplate template = emailTemplateRepository.findById(templateId)
+                    .orElseThrow(() -> new RuntimeException("Template not found"));
+
+            org.example.monentregratuit.entity.EmailCampaign campaign = org.example.monentregratuit.entity.EmailCampaign.builder()
+                    .foire(foire)
+                    .template(template)
+                    .name("Campagne - " + template.getName() + " - " + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
+                    .sentAt(java.time.LocalDateTime.now())
+                    .totalRecipients(users.size())
+                    .successCount(0)
+                    .failureCount(0)
+                    .build();
+            
+            campaign = emailCampaignRepository.save(campaign);
+
             int totalEmails = users.size();
             int successfulEmails = 0;
             int failedEmails = 0;
             List<String> errors = new ArrayList<>();
 
             for (ExcelUser user : users) {
+                String trackingToken = UUID.randomUUID().toString();
+                
                 try {
                     // Format date and time to be human-readable
                     String formattedDate = formatDate(user.getDate());
                     String formattedTime = formatTime(user.getHeure());
                     
-                    emailTemplateService.sendEmailWithTemplate(
+                    emailTemplateService.sendEmailWithTemplateAndTracking(
                         templateId,
                         user.getEmail(),
                         user.getNom(),
                         formattedDate,
                         formattedTime,
                         user.getCode(),
-                        user.getFoire().getName()
+                        user.getFoire().getName(),
+                        trackingToken
                     );
+                    
+                    // Log success
+                    org.example.monentregratuit.entity.EmailLog log = org.example.monentregratuit.entity.EmailLog.builder()
+                            .campaign(campaign)
+                            .recipientEmail(user.getEmail())
+                            .excelUser(user)
+                            .status(org.example.monentregratuit.entity.EmailLog.EmailStatus.SENT)
+                            .trackingToken(trackingToken)
+                            .build();
+                    emailLogRepository.save(log);
+
                     successfulEmails++;
                 } catch (Exception e) {
                     failedEmails++;
                     errors.add("Failed to send email to " + user.getEmail() + ": " + e.getMessage());
                     System.err.println("Failed to send email to " + user.getEmail() + ": " + e.getMessage());
+                    
+                    // Log failure
+                    org.example.monentregratuit.entity.EmailLog log = org.example.monentregratuit.entity.EmailLog.builder()
+                            .campaign(campaign)
+                            .recipientEmail(user.getEmail())
+                            .excelUser(user)
+                            .status(org.example.monentregratuit.entity.EmailLog.EmailStatus.FAILED)
+                            .errorMessage(e.getMessage())
+                            .trackingToken(trackingToken)
+                            .build();
+                    emailLogRepository.save(log);
                 }
             }
+            
+            // Update campaign stats
+            campaign.setSuccessCount(successfulEmails);
+            campaign.setFailureCount(failedEmails);
+            emailCampaignRepository.save(campaign);
 
             return EmailSendResponse.builder()
                 .success(successfulEmails > 0)

@@ -86,6 +86,9 @@ public class SecurityConfig {
                 // Public visit tracking endpoint - no authentication required
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/visits/track").permitAll()
                 
+                // Email tracking endpoints - no authentication required (for pixel/click tracking)
+                .requestMatchers("/api/track/**").permitAll()
+                
                 // Visit statistics endpoints - require authentication (admin only)
                 .requestMatchers("/api/visits/**").authenticated()
                 
