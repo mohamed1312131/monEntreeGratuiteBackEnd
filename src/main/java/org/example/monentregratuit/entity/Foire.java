@@ -121,5 +121,7 @@ public class Foire {
     public static class DateRange {
         private String startDate; // Format: yyyy-MM-dd
         private String endDate;   // Format: yyyy-MM-dd
+        private String startTime; // Format: HH:mm (optional)
+        private String endTime;   // Format: HH:mm (optional)
     }
 }

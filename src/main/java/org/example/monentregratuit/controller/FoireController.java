@@ -84,6 +84,24 @@ public class FoireController {
                     .body(Map.of("error", "Failed to add foire: " + e.getMessage()));
         }
     }
+
+    @PutMapping("/update/{countryCode}/{id}")
+    public ResponseEntity<?> updateFoire(
+            @PathVariable String countryCode,
+            @PathVariable Long id,
+            @RequestParam String name,
+            @RequestParam(required = false) MultipartFile file,
+            @RequestParam String location,
+            @RequestParam String description,
+            @RequestParam String dateRanges) {
+        try {
+            foireService.updateFoire(countryCode, id, name, file, location, description, dateRanges);
+            return ResponseEntity.ok().body(Map.of("message", "Foire updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Failed to update foire: " + e.getMessage()));
+        }
+    }
     @GetMapping("/all")
     public List<Foire> getAllFoires() {
         return foireService.getAllFoires();

@@ -122,6 +122,30 @@ public class FoireService {
         foireRepository.save(foire);
     }
 
+    public void updateFoire(String countryCode, Long id, String name, MultipartFile file, String location, String description, String dateRangesJson) throws IOException {
+        Foire foire = foireRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid fair ID: " + id));
+
+        // Check if the fair belongs to the specified country
+        if (foire.getCountryCode() != null && foire.getCountryCode().name().equalsIgnoreCase(countryCode)) {
+            foire.setName(name);
+            foire.setDescription(description);
+            foire.setLocation(location);
+            foire.setDateRanges(dateRangesJson);
+
+            // Only update image if a new file is provided
+            if (file != null && !file.isEmpty()) {
+                Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+                String imageUrl = uploadResult.get("secure_url").toString();
+                foire.setImage(imageUrl);
+            }
+
+            foireRepository.save(foire);
+        } else {
+            throw new IllegalArgumentException("Foire does not belong to the given country: " + countryCode);
+        }
+    }
+
     /**
      * Activates a fair (Foire) by setting its status to active.
      *
