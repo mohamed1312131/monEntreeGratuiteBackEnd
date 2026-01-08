@@ -1,6 +1,7 @@
 package org.example.monentregratuit.service;
 
 import org.example.monentregratuit.DTO.CampaignStatsDTO;
+import org.example.monentregratuit.DTO.EmailLogUserDTO;
 import org.example.monentregratuit.entity.EmailCampaign;
 import org.example.monentregratuit.entity.EmailLog;
 import org.example.monentregratuit.repo.EmailBlocklistRepository;
@@ -91,6 +92,55 @@ public class EmailCampaignService {
                 .clickCount(clicked)
                 .unsubscribeCount(unsubscribed)
                 .spamCount(0) // No feedback loop integration yet
+                .build();
+    }
+
+    public List<EmailLogUserDTO> getCampaignUsersByType(Long campaignId, String type) {
+        List<EmailLog> logs = logRepository.findByCampaignId(campaignId);
+        
+        return logs.stream()
+                .filter(log -> matchesType(log, type))
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private boolean matchesType(EmailLog log, String type) {
+        switch (type) {
+            case "all":
+                return true;
+            case "delivered":
+                return log.getStatus() == EmailLog.EmailStatus.SENT;
+            case "failed":
+                return log.getStatus() == EmailLog.EmailStatus.FAILED;
+            case "opened":
+                return log.isOpened();
+            case "not-opened":
+                return log.getStatus() == EmailLog.EmailStatus.SENT && !log.isOpened();
+            case "clicked":
+                return log.isClicked();
+            case "not-clicked":
+                return log.isOpened() && !log.isClicked();
+            case "unsubscribed":
+                return blocklistRepository.existsByEmail(log.getRecipientEmail());
+            default:
+                return false;
+        }
+    }
+
+    private EmailLogUserDTO convertToDTO(EmailLog log) {
+        String recipientName = log.getExcelUser() != null ? log.getExcelUser().getNom() : "N/A";
+        
+        return EmailLogUserDTO.builder()
+                .id(log.getId())
+                .recipientEmail(log.getRecipientEmail())
+                .recipientName(recipientName)
+                .status(log.getStatus().name())
+                .opened(log.isOpened())
+                .openedAt(log.getOpenedAt())
+                .clicked(log.isClicked())
+                .clickedAt(log.getClickedAt())
+                .clickCount(log.getClickCount())
+                .errorMessage(log.getErrorMessage())
                 .build();
     }
 }
