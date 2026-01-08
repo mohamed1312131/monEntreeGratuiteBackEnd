@@ -16,6 +16,7 @@ public class FoireDTO {
     private String description;
     private String location;
     private List<Foire.DateRange> dateRanges;
+    private List<Foire.DayTimeSlot> dayTimeSlots;
 
     @Deprecated
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")

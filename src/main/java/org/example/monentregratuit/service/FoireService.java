@@ -60,6 +60,7 @@ public class FoireService {
         dto.setDescription(foire.getDescription());
         dto.setLocation(foire.getLocation());
         dto.setDateRanges(foire.getDateRangesList());
+        dto.setDayTimeSlots(foire.getDayTimeSlotsList());
         dto.setIsActive(foire.getIsActive());
         dto.setDisponible(foire.getDisponible());
         dto.setCreatedAt(foire.getCreatedAt());
@@ -193,6 +194,25 @@ public class FoireService {
             throw new IllegalArgumentException("Foire does not belong to the given country: " + countryCode);
         }
     }
+
+    public void updateDayTimeSlots(String countryCode, Long id, String dayTimeSlotsJson) {
+        Foire foire = foireRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid fair ID: " + id));
+
+        if (foire.getCountryCode() != null && foire.getCountryCode().name().equalsIgnoreCase(countryCode)) {
+            foire.setDayTimeSlots(dayTimeSlotsJson);
+            foireRepository.save(foire);
+        } else {
+            throw new IllegalArgumentException("Foire does not belong to the given country: " + countryCode);
+        }
+    }
+
+    public List<Foire.DayTimeSlot> getDayTimeSlots(Long id) {
+        Foire foire = foireRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid fair ID: " + id));
+        return foire.getDayTimeSlotsList();
+    }
+
     public List<FoireDTO> getActiveFoiresByCountry(String countryCode) {
         CountryCode code = CountryCode.valueOf(countryCode);
         return foireRepository.findByCountryCodeAndIsActiveTrue(code).stream()

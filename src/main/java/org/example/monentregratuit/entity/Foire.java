@@ -51,6 +51,9 @@ public class Foire {
     @Column(name = "date_ranges", columnDefinition = "TEXT")
     private String dateRanges; // JSON array of date ranges [{"startDate": "2026-01-01", "endDate": "2026-01-03"}]
 
+    @Column(name = "day_time_slots", columnDefinition = "TEXT")
+    private String dayTimeSlots; // JSON array of day-specific time slots [{"date": "2026-01-01", "times": [{"id": "abc", "startTime": "10:00", "isEnabled": true}]}]
+
     @Column(columnDefinition = "TEXT")
     private String description; // Description of the fair
 
@@ -121,7 +124,44 @@ public class Foire {
     public static class DateRange {
         private String startDate; // Format: yyyy-MM-dd
         private String endDate;   // Format: yyyy-MM-dd
-        private String startTime; // Format: HH:mm (optional)
-        private String endTime;   // Format: HH:mm (optional)
+    }
+    
+    // Helper methods for day time slots
+    public List<DayTimeSlot> getDayTimeSlotsList() {
+        if (dayTimeSlots == null || dayTimeSlots.isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(dayTimeSlots, new TypeReference<List<DayTimeSlot>>() {});
+        } catch (JsonProcessingException e) {
+            return new ArrayList<>();
+        }
+    }
+    
+    public void setDayTimeSlotsList(List<DayTimeSlot> slots) {
+        try {
+            this.dayTimeSlots = objectMapper.writeValueAsString(slots);
+        } catch (JsonProcessingException e) {
+            this.dayTimeSlots = "[]";
+        }
+    }
+    
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DayTimeSlot {
+        private String date; // Format: yyyy-MM-dd
+        private List<TimeSlot> times; // List of time slots for this specific day
+    }
+    
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TimeSlot {
+        private String id; // Unique identifier for the time slot
+        private String startTime; // Format: HH:mm - Entry time
+        private Boolean isEnabled; // Whether this time slot is active
     }
 }

@@ -137,4 +137,29 @@ public class FoireController {
                     .body(Map.of("error", "Failed to toggle disponible status: " + e.getMessage()));
         }
     }
+
+    @PutMapping("/updateTimeSlots/{countryCode}/{id}")
+    public ResponseEntity<?> updateDayTimeSlots(
+            @PathVariable String countryCode,
+            @PathVariable Long id,
+            @RequestBody String dayTimeSlotsJson) {
+        try {
+            foireService.updateDayTimeSlots(countryCode, id, dayTimeSlotsJson);
+            return ResponseEntity.ok().body(Map.of("message", "Time slots updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Failed to update time slots: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/getTimeSlots/{id}")
+    public ResponseEntity<?> getDayTimeSlots(@PathVariable Long id) {
+        try {
+            List<Foire.DayTimeSlot> timeSlots = foireService.getDayTimeSlots(id);
+            return ResponseEntity.ok(timeSlots);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Failed to get time slots: " + e.getMessage()));
+        }
+    }
 }
