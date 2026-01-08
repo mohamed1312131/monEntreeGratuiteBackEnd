@@ -18,4 +18,7 @@ public class CampaignStatsDTO {
     private int clickCount;
     private int unsubscribeCount;
     private int spamCount; // Placeholder for now
+    private double openRate; // Percentage of delivered emails that were opened
+    private double clickRate; // Percentage of delivered emails that were clicked
+    private double clickToOpenRate; // Percentage of opened emails that were clicked
 }

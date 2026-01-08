@@ -81,6 +81,11 @@ public class EmailCampaignService {
             }
         }
 
+        // Calculate rates
+        double openRate = delivered > 0 ? (opened * 100.0 / delivered) : 0.0;
+        double clickRate = delivered > 0 ? (clicked * 100.0 / delivered) : 0.0;
+        double clickToOpenRate = opened > 0 ? (clicked * 100.0 / opened) : 0.0;
+
         return CampaignStatsDTO.builder()
                 .id(campaign.getId())
                 .name(campaign.getName())
@@ -92,6 +97,9 @@ public class EmailCampaignService {
                 .clickCount(clicked)
                 .unsubscribeCount(unsubscribed)
                 .spamCount(0) // No feedback loop integration yet
+                .openRate(Math.round(openRate * 100.0) / 100.0) // Round to 2 decimal places
+                .clickRate(Math.round(clickRate * 100.0) / 100.0)
+                .clickToOpenRate(Math.round(clickToOpenRate * 100.0) / 100.0)
                 .build();
     }
 
