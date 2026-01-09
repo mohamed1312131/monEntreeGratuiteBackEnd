@@ -22,7 +22,13 @@ public class UploadController {
     @PostMapping("/image")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+            Map<String, Object> uploadParams = ObjectUtils.asMap(
+                "quality", "auto:best",
+                "fetch_format", "auto",
+                "flags", "preserve_transparency"
+            );
+            
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
             
             Map<String, String> response = new HashMap<>();
             response.put("url", uploadResult.get("secure_url").toString());

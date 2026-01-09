@@ -114,7 +114,13 @@ public class EmailTemplateService {
         EmailTemplate template = emailTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new RuntimeException("Template not found with id: " + templateId));
 
-        Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+        Map<String, Object> uploadParams = ObjectUtils.asMap(
+            "quality", "auto:best",
+            "fetch_format", "auto",
+            "flags", "preserve_transparency"
+        );
+        
+        Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
         String imageUrl = uploadResult.get("secure_url").toString();
         
         int maxOrder = emailTemplateImageRepository.findByEmailTemplateIdOrderByImageOrderAsc(templateId)
