@@ -22,16 +22,18 @@ public class UploadController {
     @PostMapping("/image")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
+            // Upload as raw to preserve 100% original quality without any processing
             Map<String, Object> uploadParams = ObjectUtils.asMap(
-                "quality", "auto:best",
-                "fetch_format", "auto",
-                "flags", "preserve_transparency"
+                "resource_type", "raw"
             );
             
             Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
             
+            // Get URL - raw uploads preserve exact original quality
+            String originalUrl = uploadResult.get("secure_url").toString();
+            
             Map<String, String> response = new HashMap<>();
-            response.put("url", uploadResult.get("secure_url").toString());
+            response.put("url", originalUrl);
             response.put("public_id", uploadResult.get("public_id").toString());
             
             return ResponseEntity.ok(response);
