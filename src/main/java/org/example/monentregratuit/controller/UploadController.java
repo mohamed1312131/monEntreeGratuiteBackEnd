@@ -22,19 +22,30 @@ public class UploadController {
     @PostMapping("/image")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            // Upload as raw to preserve 100% original quality without any processing
+            // Upload with explicit parameters to prevent any compression or optimization
             Map<String, Object> uploadParams = ObjectUtils.asMap(
-                "resource_type", "raw"
+                "quality", "100",
+                "flags", "no_override",
+                "transformation", ObjectUtils.asMap("quality", "100")
             );
             
             Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
             
-            // Get URL - raw uploads preserve exact original quality
-            String originalUrl = uploadResult.get("secure_url").toString();
+            // Get the original URL and ensure it uses fl_lossy.false to prevent compression
+            String baseUrl = uploadResult.get("secure_url").toString();
+            
+            // Construct URL with explicit quality parameters to prevent Cloudinary from optimizing
+            String publicId = uploadResult.get("public_id").toString();
+            String format = uploadResult.get("format").toString();
+            String cloudName = cloudinary.config.cloudName;
+            
+            // Build URL with q_100 (quality 100) and fl_lossy.false flags
+            String highQualityUrl = String.format("https://res.cloudinary.com/%s/image/upload/q_100,fl_lossy.false/%s.%s", 
+                cloudName, publicId, format);
             
             Map<String, String> response = new HashMap<>();
-            response.put("url", originalUrl);
-            response.put("public_id", uploadResult.get("public_id").toString());
+            response.put("url", highQualityUrl);
+            response.put("public_id", publicId);
             
             return ResponseEntity.ok(response);
         } catch (IOException e) {
