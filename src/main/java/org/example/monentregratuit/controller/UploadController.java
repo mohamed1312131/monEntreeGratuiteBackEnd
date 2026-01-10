@@ -24,9 +24,7 @@ public class UploadController {
         try {
             // Upload with explicit parameters to prevent any compression or optimization
             Map<String, Object> uploadParams = ObjectUtils.asMap(
-                "quality", "100",
-                "flags", "no_override",
-                "transformation", ObjectUtils.asMap("quality", "100")
+                "quality", "100"
             );
             
             Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
