@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface EmailCampaignRepository extends JpaRepository<EmailCampaign, Long> {
     List<EmailCampaign> findByFoireIdOrderBySentAtDesc(Long foireId);
+    long countByTemplateId(Long templateId);
 }
