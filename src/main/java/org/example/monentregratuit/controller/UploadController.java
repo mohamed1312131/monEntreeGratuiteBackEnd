@@ -22,6 +22,23 @@ public class UploadController {
     @PostMapping("/image")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
+            // Validate file size (10MB limit for Cloudinary free tier)
+            long maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.getSize() > maxFileSize) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "File size exceeds 10MB limit. Please compress or resize the image.");
+                errorResponse.put("fileSize", String.valueOf(file.getSize()));
+                errorResponse.put("maxSize", String.valueOf(maxFileSize));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            
+            // Validate file is not empty
+            if (file.isEmpty()) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "File is empty");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            
             // Upload with explicit parameters to prevent any compression or optimization
             Map<String, Object> uploadParams = ObjectUtils.asMap(
                 "quality", "100"
@@ -39,14 +56,36 @@ public class UploadController {
             
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to upload image: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to upload image: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Upload failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
     @PostMapping("/video")
     public ResponseEntity<?> uploadVideo(@RequestParam("file") MultipartFile file) {
         try {
+            // Validate file size (10MB limit for Cloudinary free tier)
+            long maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.getSize() > maxFileSize) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "File size exceeds 10MB limit. Please compress the video.");
+                errorResponse.put("fileSize", String.valueOf(file.getSize()));
+                errorResponse.put("maxSize", String.valueOf(maxFileSize));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            
+            // Validate file is not empty
+            if (file.isEmpty()) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "File is empty");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            
             // Upload video to Cloudinary with resource_type video
             Map<String, Object> params = ObjectUtils.asMap(
                 "resource_type", "video"
@@ -60,8 +99,13 @@ public class UploadController {
             
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to upload video: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to upload video: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Upload failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 }

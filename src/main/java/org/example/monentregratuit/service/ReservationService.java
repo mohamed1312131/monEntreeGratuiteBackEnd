@@ -236,6 +236,8 @@ public class ReservationService {
         Map<String, String> variables = new HashMap<>();
         variables.put("NOM", reservation.getName());
         variables.put("FOIRE_NAME", reservation.getFoire().getName());
+        variables.put("DATE", reservation.getSelectedDate() != null ? reservation.getSelectedDate() : "N/A");
+        variables.put("HEURE", reservation.getSelectedTime() != null ? reservation.getSelectedTime() : "N/A");
         
         emailService.sendBulkEmails(
             Collections.singletonList(reservation.getEmail()), 
@@ -258,7 +260,8 @@ public class ReservationService {
         variables.put("Customer Name", dto.getName());
         variables.put("Fair Name", dto.getFoireName());
         variables.put("Reservation ID", reservation.getId().toString());
-        variables.put("Date", dto.getReservationDate());
+        variables.put("Date", reservation.getSelectedDate() != null ? reservation.getSelectedDate() : "N/A");
+        variables.put("Heure", reservation.getSelectedTime() != null ? reservation.getSelectedTime() : "N/A");
         variables.put("Location", dto.getCity());
         variables.put("Phone", dto.getPhone());
         variables.put("Email", dto.getEmail());
