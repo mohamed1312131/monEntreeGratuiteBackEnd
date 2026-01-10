@@ -29,20 +29,12 @@ public class UploadController {
             
             Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
             
-            // Get the original URL and ensure it uses fl_lossy.false to prevent compression
-            String baseUrl = uploadResult.get("secure_url").toString();
-            
-            // Construct URL with explicit quality parameters to prevent Cloudinary from optimizing
+            // Get the secure URL directly - quality 100 upload parameter ensures high quality
+            String imageUrl = uploadResult.get("secure_url").toString();
             String publicId = uploadResult.get("public_id").toString();
-            String format = uploadResult.get("format").toString();
-            String cloudName = cloudinary.config.cloudName;
-            
-            // Build URL with q_100 (quality 100) and fl_lossy.false flags
-            String highQualityUrl = String.format("https://res.cloudinary.com/%s/image/upload/q_100,fl_lossy.false/%s.%s", 
-                cloudName, publicId, format);
             
             Map<String, String> response = new HashMap<>();
-            response.put("url", highQualityUrl);
+            response.put("url", imageUrl);
             response.put("public_id", publicId);
             
             return ResponseEntity.ok(response);

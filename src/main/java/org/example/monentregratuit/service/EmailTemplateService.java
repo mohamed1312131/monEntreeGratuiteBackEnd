@@ -120,13 +120,8 @@ public class EmailTemplateService {
         
         Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
         
-        // Construct high-quality URL
-        String publicId = uploadResult.get("public_id").toString();
-        String format = uploadResult.get("format").toString();
-        String cloudName = cloudinary.config.cloudName;
-        
-        String imageUrl = String.format("https://res.cloudinary.com/%s/image/upload/q_100,fl_lossy.false/%s.%s", 
-            cloudName, publicId, format);
+        // Get the secure URL directly - quality 100 upload parameter ensures high quality
+        String imageUrl = uploadResult.get("secure_url").toString();
         
         int maxOrder = emailTemplateImageRepository.findByEmailTemplateIdOrderByImageOrderAsc(templateId)
                 .stream()
