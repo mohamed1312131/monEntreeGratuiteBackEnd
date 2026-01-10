@@ -39,6 +39,12 @@ public class Reservations {
     @Column(nullable = false)
     private AgeCategory ageCategory; // Instead of raw age numbers
 
+    @Column(name = "selected_date")
+    private String selectedDate; // The specific date selected by user (yyyy-MM-dd format)
+
+    @Column(name = "selected_time")
+    private String selectedTime; // The specific time slot selected by user (HH:mm format)
+
     @Column(name = "reservation_date")
     private LocalDateTime reservationDate; // Date when the reservation is made
 

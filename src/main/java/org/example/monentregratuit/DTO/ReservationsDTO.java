@@ -16,6 +16,8 @@ public class ReservationsDTO {
     private String telephone;
     private String trancheAge;
     private AgeCategory ageCategory;
+    private String selectedDate;
+    private String selectedTime;
     private String recaptchaToken;
     
     // Legacy fields for backward compatibility

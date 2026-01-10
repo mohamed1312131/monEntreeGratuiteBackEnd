@@ -72,6 +72,19 @@ public class ReservationService {
         Foire foire = foireRepository.findById(reservationDTO.getFoireId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Foire ID: " + reservationDTO.getFoireId()));
         
+        // Validate selected date and time
+        if (reservationDTO.getSelectedDate() != null && reservationDTO.getSelectedTime() != null) {
+            List<Foire.DayTimeSlot> dayTimeSlots = foire.getDayTimeSlotsList();
+            boolean isValidTimeSlot = dayTimeSlots.stream()
+                .filter(daySlot -> daySlot.getDate().equals(reservationDTO.getSelectedDate()))
+                .flatMap(daySlot -> daySlot.getTimes().stream())
+                .anyMatch(timeSlot -> timeSlot.getStartTime().equals(reservationDTO.getSelectedTime()) && timeSlot.getIsEnabled());
+            
+            if (!isValidTimeSlot) {
+                throw new IllegalArgumentException("Le créneau horaire sélectionné n'est pas disponible");
+            }
+        }
+        
         // Check for duplicate email for this foire
         if (reservationRepository.existsByFoireIdAndEmail(reservationDTO.getFoireId(), reservationDTO.getEmail())) {
             throw new IllegalArgumentException("Une réservation existe déjà avec cet email pour cette foire");
@@ -92,6 +105,8 @@ public class ReservationService {
         reservation.setEmail(reservationDTO.getEmail());
         reservation.setPhone(reservationDTO.getPhone());
         reservation.setAgeCategory(reservationDTO.getAgeCategory());
+        reservation.setSelectedDate(reservationDTO.getSelectedDate());
+        reservation.setSelectedTime(reservationDTO.getSelectedTime());
         reservation.setCreatedAt(LocalDateTime.now());
 
         Reservations savedReservation = reservationRepository.save(reservation);
