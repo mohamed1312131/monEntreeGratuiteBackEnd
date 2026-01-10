@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface EmailLogRepository extends JpaRepository<EmailLog, Long> {
     Optional<EmailLog> findByTrackingToken(String trackingToken);
     List<EmailLog> findByCampaignId(Long campaignId);
+    void deleteByCampaignId(Long campaignId);
     
     long countByCampaignIdAndStatus(Long campaignId, EmailLog.EmailStatus status);
     long countByCampaignIdAndOpenedTrue(Long campaignId);

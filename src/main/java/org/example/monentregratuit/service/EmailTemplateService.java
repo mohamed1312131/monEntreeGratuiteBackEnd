@@ -11,6 +11,7 @@ import org.example.monentregratuit.entity.EmailTemplate;
 import org.example.monentregratuit.entity.EmailTemplateImage;
 import org.example.monentregratuit.entity.Invitation;
 import org.example.monentregratuit.repo.EmailCampaignRepository;
+import org.example.monentregratuit.repo.EmailLogRepository;
 import org.example.monentregratuit.repo.EmailTemplateImageRepository;
 import org.example.monentregratuit.repo.EmailTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class EmailTemplateService {
 
     @Autowired
     private EmailCampaignRepository emailCampaignRepository;
+
+    @Autowired
+    private EmailLogRepository emailLogRepository;
 
     @Autowired
     private Cloudinary cloudinary;
@@ -106,13 +110,18 @@ public class EmailTemplateService {
         EmailTemplate template = emailTemplateRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Template not found with id: " + id));
         
-        // Check if template is used in any campaigns
-        long campaignCount = emailCampaignRepository.countByTemplateId(id);
-        if (campaignCount > 0) {
-            throw new RuntimeException("Cannot delete template: it is used in " + campaignCount + " email campaign(s). Please delete or update those campaigns first.");
+        // Find all campaigns using this template
+        List<org.example.monentregratuit.entity.EmailCampaign> campaigns = emailCampaignRepository.findByTemplateId(id);
+        
+        // Delete all email logs for these campaigns first
+        for (org.example.monentregratuit.entity.EmailCampaign campaign : campaigns) {
+            emailLogRepository.deleteByCampaignId(campaign.getId());
         }
         
-        // Delete associated images first
+        // Delete all campaigns using this template
+        emailCampaignRepository.deleteAll(campaigns);
+        
+        // Delete associated images
         List<EmailTemplateImage> images = emailTemplateImageRepository.findByEmailTemplateId(id);
         emailTemplateImageRepository.deleteAll(images);
         
