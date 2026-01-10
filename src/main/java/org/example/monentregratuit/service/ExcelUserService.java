@@ -210,7 +210,14 @@ public class ExcelUserService {
                 return cell.getStringCellValue();
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue().toString();
+                    // Try to get the formatted string value to preserve Excel formatting
+                    // This keeps formats like "DIMANCHE 18 JANVIER 2026" intact
+                    try {
+                        DataFormatter formatter = new DataFormatter();
+                        return formatter.formatCellValue(cell);
+                    } catch (Exception e) {
+                        return cell.getDateCellValue().toString();
+                    }
                 } else {
                     return String.valueOf((long) cell.getNumericCellValue());
                 }
