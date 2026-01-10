@@ -184,6 +184,8 @@ public class ReservationService {
         dto.setCity(reservation.getCity());
         dto.setEmail(reservation.getEmail());
         dto.setPhone(reservation.getPhone());
+        dto.setSelectedDate(reservation.getSelectedDate());
+        dto.setSelectedTime(reservation.getSelectedTime());
         dto.setAgeCategory(reservation.getAgeCategory());
         dto.setCountry(reservation.getFoire().getCountryCode() != null ? reservation.getFoire().getCountryCode().name() : null);
 
