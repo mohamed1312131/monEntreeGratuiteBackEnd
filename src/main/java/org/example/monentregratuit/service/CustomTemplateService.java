@@ -29,25 +29,37 @@ public class CustomTemplateService {
 
     @Transactional
     public CustomTemplateDTO createTemplate(CreateCustomTemplateRequest request) {
+        System.out.println("=== CustomTemplateService.createTemplate() START ===");
+        System.out.println("Request name: " + request.getName());
+        System.out.println("Request backgroundColor: " + request.getBackgroundColor());
+        System.out.println("Request images count: " + (request.getImages() != null ? request.getImages().size() : 0));
+        
         // Generate unique slug from name
         String slug = generateSlug(request.getName());
+        System.out.println("Generated slug: " + slug);
         
         // Ensure slug is unique
         String uniqueSlug = ensureUniqueSlug(slug);
+        System.out.println("Unique slug: " + uniqueSlug);
 
-        // Create template
+        // Create template with initialized images list
         CustomTemplate template = CustomTemplate.builder()
                 .name(request.getName())
                 .slug(uniqueSlug)
                 .backgroundColor(request.getBackgroundColor())
                 .active(true)
+                .images(new java.util.ArrayList<>())
                 .build();
 
+        System.out.println("Saving template to database...");
         template = customTemplateRepository.save(template);
+        System.out.println("Template saved with ID: " + template.getId());
 
         // Add images
         if (request.getImages() != null && !request.getImages().isEmpty()) {
+            System.out.println("Adding " + request.getImages().size() + " images...");
             for (ImageOrderDTO imageDto : request.getImages()) {
+                System.out.println("Adding image - URL: " + imageDto.getImageUrl() + ", Order: " + imageDto.getDisplayOrder());
                 TemplateImage image = TemplateImage.builder()
                         .template(template)
                         .imageUrl(imageDto.getImageUrl())
@@ -55,14 +67,21 @@ public class CustomTemplateService {
                         .altText(imageDto.getAltText())
                         .build();
                 templateImageRepository.save(image);
+                System.out.println("Image saved with ID: " + image.getId());
             }
+            System.out.println("All images saved successfully");
         }
 
         // Reload to get images
+        System.out.println("Reloading template with images...");
         template = customTemplateRepository.findById(template.getId())
                 .orElseThrow(() -> new RuntimeException("Template not found"));
+        System.out.println("Template reloaded with " + template.getImages().size() + " images");
 
-        return convertToDTO(template);
+        System.out.println("Converting to DTO...");
+        CustomTemplateDTO dto = convertToDTO(template);
+        System.out.println("=== CustomTemplateService.createTemplate() SUCCESS ===");
+        return dto;
     }
 
     public List<CustomTemplateDTO> getAllTemplates() {
