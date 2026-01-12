@@ -82,6 +82,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Public visit tracking endpoint
         if (path.equals("/api/visits/track") && "POST".equalsIgnoreCase(method)) return true;
         
+        // Public template viewer by slug - no auth required
+        if (path.startsWith("/api/custom-templates/slug/") && "GET".equalsIgnoreCase(method)) return true;
+        
         // POST to /api/reservations is public
         if (path.equals("/api/reservations") && "POST".equalsIgnoreCase(method)) return true;
         
