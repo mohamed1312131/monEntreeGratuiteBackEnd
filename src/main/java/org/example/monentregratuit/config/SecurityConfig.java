@@ -53,13 +53,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("=== SecurityConfig: Configuring Security Filter Chain ===");
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Allow OPTIONS requests for CORS preflight
-                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+            .authorizeHttpRequests(auth -> {
+                System.out.println("Configuring authorization rules...");
+                auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 
                 // Authentication endpoints - public
                 .requestMatchers("/api/auth/**").permitAll()
@@ -102,10 +103,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/newsletter-subscribers/**").authenticated()
                 
                 // All other endpoints require authentication (admin only)
-                .anyRequest().authenticated()
-            )
+                .anyRequest().authenticated();
+                System.out.println("Authorization rules configured successfully");
+            })
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        System.out.println("=== SecurityConfig: Security Filter Chain built successfully ===");
         return http.build();
     }
 }

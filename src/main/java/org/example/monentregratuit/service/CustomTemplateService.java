@@ -66,9 +66,25 @@ public class CustomTemplateService {
     }
 
     public List<CustomTemplateDTO> getAllTemplates() {
-        return customTemplateRepository.findAll().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        System.out.println("=== CustomTemplateService.getAllTemplates() START ===");
+        try {
+            System.out.println("Calling customTemplateRepository.findAll()...");
+            List<CustomTemplate> templates = customTemplateRepository.findAll();
+            System.out.println("Found " + templates.size() + " templates in database");
+            
+            System.out.println("Converting to DTOs...");
+            List<CustomTemplateDTO> dtos = templates.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            System.out.println("Converted " + dtos.size() + " templates to DTOs");
+            System.out.println("=== CustomTemplateService.getAllTemplates() SUCCESS ===");
+            return dtos;
+        } catch (Exception e) {
+            System.err.println("=== CustomTemplateService.getAllTemplates() ERROR ===");
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public CustomTemplateDTO getTemplateById(Long id) {

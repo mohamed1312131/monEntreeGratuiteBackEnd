@@ -32,8 +32,20 @@ public class CustomTemplateController {
 
     @GetMapping
     public ResponseEntity<List<CustomTemplateDTO>> getAllTemplates() {
-        List<CustomTemplateDTO> templates = customTemplateService.getAllTemplates();
-        return ResponseEntity.ok(templates);
+        System.out.println("=== CustomTemplateController.getAllTemplates() START ===");
+        System.out.println("Timestamp: " + java.time.LocalDateTime.now());
+        try {
+            System.out.println("Calling customTemplateService.getAllTemplates()...");
+            List<CustomTemplateDTO> templates = customTemplateService.getAllTemplates();
+            System.out.println("Templates retrieved successfully. Count: " + templates.size());
+            System.out.println("=== CustomTemplateController.getAllTemplates() SUCCESS ===");
+            return ResponseEntity.ok(templates);
+        } catch (Exception e) {
+            System.err.println("=== CustomTemplateController.getAllTemplates() ERROR ===");
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{id}")
