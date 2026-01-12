@@ -74,21 +74,12 @@ public class ExcelUserService {
             }
 
             // Delete old ExcelUser data for this foire before importing new data
-            // Campaign data (EmailLog) will remain intact - we nullify the ExcelUser reference first
+            // Campaign data (EmailLog) will remain intact because we store the data directly in EmailLog
             List<ExcelUser> oldUsers = excelUserRepository.findByFoireId(foireId);
             if (!oldUsers.isEmpty()) {
-                // First, nullify ExcelUser references in EmailLog to preserve campaign history
-                for (ExcelUser user : oldUsers) {
-                    List<org.example.monentregratuit.entity.EmailLog> logs = emailLogRepository.findByExcelUserId(user.getId());
-                    for (org.example.monentregratuit.entity.EmailLog log : logs) {
-                        log.setExcelUser(null);
-                        emailLogRepository.save(log);
-                    }
-                }
-                
-                // Now safe to delete ExcelUser records
+                // Safe to delete ExcelUser records - EmailLog has its own copy of the data
                 excelUserRepository.deleteAll(oldUsers);
-                System.out.println("Deleted " + oldUsers.size() + " old ExcelUser records for foire ID: " + foireId + " (campaign history preserved)");
+                System.out.println("Deleted " + oldUsers.size() + " old ExcelUser records for foire ID: " + foireId + " (campaign data preserved in EmailLog)");
             }
 
             Workbook workbook = getWorkbook(file.getInputStream(), fileName);
@@ -377,10 +368,15 @@ public class ExcelUserService {
                         trackingToken
                     );
                     
-                    // Log success
+                    // Log success - store ExcelUser data directly for preservation
                     org.example.monentregratuit.entity.EmailLog log = org.example.monentregratuit.entity.EmailLog.builder()
                             .campaign(campaign)
                             .recipientEmail(user.getEmail())
+                            .recipientName(user.getNom())
+                            .recipientDate(user.getDate())
+                            .recipientHeure(user.getHeure())
+                            .recipientCode(user.getCode())
+                            .recipientFoireName(user.getFoire() != null ? user.getFoire().getName() : null)
                             .excelUser(user)
                             .status(org.example.monentregratuit.entity.EmailLog.EmailStatus.SENT)
                             .trackingToken(trackingToken)
@@ -393,10 +389,15 @@ public class ExcelUserService {
                     errors.add("Failed to send email to " + user.getEmail() + ": " + e.getMessage());
                     System.err.println("Failed to send email to " + user.getEmail() + ": " + e.getMessage());
                     
-                    // Log failure
+                    // Log failure - store ExcelUser data directly for preservation
                     org.example.monentregratuit.entity.EmailLog log = org.example.monentregratuit.entity.EmailLog.builder()
                             .campaign(campaign)
                             .recipientEmail(user.getEmail())
+                            .recipientName(user.getNom())
+                            .recipientDate(user.getDate())
+                            .recipientHeure(user.getHeure())
+                            .recipientCode(user.getCode())
+                            .recipientFoireName(user.getFoire() != null ? user.getFoire().getName() : null)
                             .excelUser(user)
                             .status(org.example.monentregratuit.entity.EmailLog.EmailStatus.FAILED)
                             .errorMessage(e.getMessage())

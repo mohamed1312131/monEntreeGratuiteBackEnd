@@ -140,12 +140,19 @@ public class EmailCampaignService {
     }
 
     private EmailLogUserDTO convertToDTO(EmailLog log) {
-        String recipientName = log.getExcelUser() != null ? log.getExcelUser().getNom() : "N/A";
-        String date = log.getExcelUser() != null ? log.getExcelUser().getDate() : null;
-        String heure = log.getExcelUser() != null ? log.getExcelUser().getHeure() : null;
-        String code = log.getExcelUser() != null ? log.getExcelUser().getCode() : null;
-        String foireName = log.getExcelUser() != null && log.getExcelUser().getFoire() != null 
-                ? log.getExcelUser().getFoire().getName() : null;
+        // Use stored data from EmailLog directly (preserved even after ExcelUser deletion)
+        // Fallback to ExcelUser only if stored data is not available (for old records)
+        String recipientName = log.getRecipientName() != null ? log.getRecipientName() 
+                : (log.getExcelUser() != null ? log.getExcelUser().getNom() : "N/A");
+        String date = log.getRecipientDate() != null ? log.getRecipientDate()
+                : (log.getExcelUser() != null ? log.getExcelUser().getDate() : null);
+        String heure = log.getRecipientHeure() != null ? log.getRecipientHeure()
+                : (log.getExcelUser() != null ? log.getExcelUser().getHeure() : null);
+        String code = log.getRecipientCode() != null ? log.getRecipientCode()
+                : (log.getExcelUser() != null ? log.getExcelUser().getCode() : null);
+        String foireName = log.getRecipientFoireName() != null ? log.getRecipientFoireName()
+                : (log.getExcelUser() != null && log.getExcelUser().getFoire() != null 
+                    ? log.getExcelUser().getFoire().getName() : null);
         
         return EmailLogUserDTO.builder()
                 .id(log.getId())

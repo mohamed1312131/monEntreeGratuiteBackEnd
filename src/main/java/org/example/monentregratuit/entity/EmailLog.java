@@ -26,6 +26,22 @@ public class EmailLog {
     @Column(name = "recipient_email", nullable = false)
     private String recipientEmail;
 
+    // Store ExcelUser data directly to preserve it even after ExcelUser deletion
+    @Column(name = "recipient_name")
+    private String recipientName;
+    
+    @Column(name = "recipient_date")
+    private String recipientDate;
+    
+    @Column(name = "recipient_heure")
+    private String recipientHeure;
+    
+    @Column(name = "recipient_code")
+    private String recipientCode;
+    
+    @Column(name = "recipient_foire_name")
+    private String recipientFoireName;
+
     // Optional: Link to ExcelUser if we want to track back to the specific user record
     // This is nullable so EmailLog is preserved even when ExcelUser is deleted
     @ManyToOne(fetch = FetchType.LAZY)
