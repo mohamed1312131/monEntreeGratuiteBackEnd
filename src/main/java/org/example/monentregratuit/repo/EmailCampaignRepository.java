@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface EmailCampaignRepository extends JpaRepository<EmailCampaign, Long> {
+    List<EmailCampaign> findAllByOrderBySentAtDesc();
     List<EmailCampaign> findByFoireIdOrderBySentAtDesc(Long foireId);
     List<EmailCampaign> findByTemplateId(Long templateId);
     long countByTemplateId(Long templateId);

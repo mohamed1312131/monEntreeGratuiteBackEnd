@@ -19,6 +19,11 @@ public class EmailCampaignController {
         this.campaignService = campaignService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<EmailCampaign>> getAllCampaigns() {
+        return ResponseEntity.ok(campaignService.getAllCampaigns());
+    }
+
     @GetMapping("/foire/{foireId}")
     public ResponseEntity<List<EmailCampaign>> getCampaignsByFoire(@PathVariable Long foireId) {
         return ResponseEntity.ok(campaignService.getCampaignsByFoire(foireId));

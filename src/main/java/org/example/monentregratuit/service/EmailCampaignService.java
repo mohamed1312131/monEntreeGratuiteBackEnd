@@ -28,6 +28,10 @@ public class EmailCampaignService {
         this.blocklistRepository = blocklistRepository;
     }
 
+    public List<EmailCampaign> getAllCampaigns() {
+        return campaignRepository.findAllByOrderBySentAtDesc();
+    }
+
     public List<EmailCampaign> getCampaignsByFoire(Long foireId) {
         return campaignRepository.findByFoireIdOrderBySentAtDesc(foireId);
     }
