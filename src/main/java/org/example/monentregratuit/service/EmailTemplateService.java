@@ -59,6 +59,9 @@ public class EmailTemplateService {
     @org.springframework.beans.factory.annotation.Value("${app.backend.url}")
     private String backendUrl;
 
+    @org.springframework.beans.factory.annotation.Value("${app.frontend.url}")
+    private String frontendUrl;
+
     public EmailTemplateDTO createTemplate(EmailTemplateDTO dto) {
         EmailTemplate template = EmailTemplate.builder()
                 .name(dto.getName())
@@ -269,8 +272,8 @@ public class EmailTemplateService {
                 .replace("{{CODE}}", code != null ? code : "")
                 .replace("{{FOIRE_NAME}}", foireName != null ? foireName : "");
 
-        // Add unsubscribe link
-        String unsubscribeUrl = backendUrl + "/api/public/unsubscribe/" + java.net.URLEncoder.encode(recipientEmail, java.nio.charset.StandardCharsets.UTF_8);
+        // Add unsubscribe link - use frontend URL
+        String unsubscribeUrl = frontendUrl + "/unsubscribe?email=" + java.net.URLEncoder.encode(recipientEmail, java.nio.charset.StandardCharsets.UTF_8);
         processedContent = processedContent.replace("{{UNSUBSCRIBE_LINK}}", unsubscribeUrl);
 
         // Inject tracking pixel if token is provided
