@@ -77,7 +77,13 @@ public class ExcelUserService {
             // Campaign data (EmailLog) will remain intact because we store the data directly in EmailLog
             List<ExcelUser> oldUsers = excelUserRepository.findByFoireId(foireId);
             if (!oldUsers.isEmpty()) {
-                // Safe to delete ExcelUser records - EmailLog has its own copy of the data
+                // First, nullify the excelUser reference in EmailLog to avoid foreign key constraint violation
+                for (ExcelUser user : oldUsers) {
+                    emailLogRepository.nullifyExcelUserReference(user.getId());
+                }
+                System.out.println("Nullified ExcelUser references in EmailLog for " + oldUsers.size() + " users");
+                
+                // Now safe to delete ExcelUser records - EmailLog has its own copy of the data
                 excelUserRepository.deleteAll(oldUsers);
                 System.out.println("Deleted " + oldUsers.size() + " old ExcelUser records for foire ID: " + foireId + " (campaign data preserved in EmailLog)");
             }
