@@ -89,6 +89,12 @@ public class SecurityConfig {
                 // Email tracking endpoints - no authentication required (for pixel/click tracking)
                 .requestMatchers("/api/track/**").permitAll()
                 
+                // Custom template public viewer - no authentication required
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/custom-templates/slug/**").permitAll()
+                
+                // Custom template admin endpoints - require authentication
+                .requestMatchers("/api/custom-templates/**").authenticated()
+                
                 // Visit statistics endpoints - require authentication (admin only)
                 .requestMatchers("/api/visits/**").authenticated()
                 
