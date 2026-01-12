@@ -94,6 +94,9 @@ public class ExcelUserService {
                 return response;
             }
 
+            // Track emails in current upload to detect duplicates within the same file
+            Set<String> emailsInCurrentUpload = new HashSet<>();
+
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null || isRowEmpty(row)) {
@@ -106,11 +109,20 @@ public class ExcelUserService {
                     ExcelUser excelUser = parseRowToExcelUser(row, columnIndexMap, foire);
                     
                     if (validateExcelUser(excelUser, errors, i)) {
-                        if (excelUserRepository.existsByEmailAndFoireId(excelUser.getEmail(), foireId)) {
+                        String email = excelUser.getEmail();
+                        
+                        // Check if email is duplicate within the current file
+                        if (emailsInCurrentUpload.contains(email)) {
+                            errors.add("Row " + (i + 1) + ": Duplicate email in this file");
+                            failedRows++;
+                        }
+                        // Check if email already exists in database for this foire
+                        else if (excelUserRepository.existsByEmailAndFoireId(email, foireId)) {
                             errors.add("Row " + (i + 1) + ": Email already exists for this foire");
                             failedRows++;
                         } else {
                             excelUserRepository.save(excelUser);
+                            emailsInCurrentUpload.add(email);
                             successfulRows++;
                         }
                     } else {
@@ -183,7 +195,14 @@ public class ExcelUserService {
         excelUser.setFoire(foire);
 
         excelUser.setNom(getCellValue(row, columnIndexMap, "nom"));
-        excelUser.setEmail(getCellValue(row, columnIndexMap, "email"));
+        
+        // Normalize email: trim whitespace and convert to lowercase
+        String email = getCellValue(row, columnIndexMap, "email");
+        if (email != null) {
+            email = email.trim().toLowerCase();
+        }
+        excelUser.setEmail(email);
+        
         excelUser.setDate(getCellValue(row, columnIndexMap, "date"));
         excelUser.setHeure(getCellValue(row, columnIndexMap, "heure"));
         excelUser.setCode(getCellValue(row, columnIndexMap, "code"));

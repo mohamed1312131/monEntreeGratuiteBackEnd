@@ -239,11 +239,11 @@ public class EmailTemplateService {
                 .build();
     }
 
-    public void sendEmailWithTemplate(Long templateId, String recipientEmail, String nom, String date, String heure, String code, String foireName) throws MessagingException {
+    public void sendEmailWithTemplate(Long templateId, String recipientEmail, String nom, String date, String heure, String code, String foireName) throws MessagingException, java.io.UnsupportedEncodingException {
         sendEmailWithTemplateAndTracking(templateId, recipientEmail, nom, date, heure, code, foireName, null);
     }
 
-    public void sendEmailWithTemplateAndTracking(Long templateId, String recipientEmail, String nom, String date, String heure, String code, String foireName, String trackingToken) throws MessagingException {
+    public void sendEmailWithTemplateAndTracking(Long templateId, String recipientEmail, String nom, String date, String heure, String code, String foireName, String trackingToken) throws MessagingException, java.io.UnsupportedEncodingException {
         
         // Check if email is blocked
         if (blocklistService.isBlocked(recipientEmail)) {
@@ -296,7 +296,7 @@ public class EmailTemplateService {
                     // Avoid double wrapping or wrapping unsubscribe links if they are handled separately (though here they are just links)
                     // Also avoid wrapping the tracking pixel we just added (it doesn't have href, but good to be safe)
                     if (!originalUrl.contains("/api/track/")) {
-                        String encodedUrl = java.net.URLEncoder.encode(originalUrl, "UTF-8");
+                        String encodedUrl = java.net.URLEncoder.encode(originalUrl, java.nio.charset.StandardCharsets.UTF_8);
                         String wrappedUrl = clickTrackingBaseUrl + encodedUrl;
                         matcher.appendReplacement(sb, "href=\"" + wrappedUrl + "\"");
                     }
@@ -311,7 +311,7 @@ public class EmailTemplateService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        helper.setFrom(mailUsername);
+        helper.setFrom(mailUsername, "Reservation");
         helper.setTo(recipientEmail);
         helper.setSubject(processedSubject);
         helper.setText(processedContent, true);
@@ -335,7 +335,7 @@ public class EmailTemplateService {
         }
     }
 
-    private void sendEmail(String to, String subject, String htmlContent) throws MessagingException {
+    private void sendEmail(String to, String subject, String htmlContent) throws MessagingException, java.io.UnsupportedEncodingException {
         // Check if email is blocked
         if (blocklistService.isBlocked(to)) {
             throw new RuntimeException("Cannot send email to " + to + ": Email is in blocklist (user unsubscribed)");
@@ -343,7 +343,7 @@ public class EmailTemplateService {
         
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-        helper.setFrom(mailUsername);
+        helper.setFrom(mailUsername, "Reservation");
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(htmlContent, true);
