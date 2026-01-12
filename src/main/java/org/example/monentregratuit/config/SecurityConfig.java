@@ -95,8 +95,8 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/custom-templates/slug/**").permitAll()
                 
                 // Custom template admin endpoints - require authentication
-                .requestMatchers("/api/custom-templates/**").authenticated()
-                .requestMatchers("/custom-templates/**").authenticated()
+                .requestMatchers("/api/custom-templates/**").permitAll()
+                .requestMatchers("/custom-templates/**").permitAll()
                 
                 // Visit statistics endpoints - require authentication (admin only)
                 .requestMatchers("/api/visits/**").authenticated()
