@@ -27,8 +27,9 @@ public class EmailLog {
     private String recipientEmail;
 
     // Optional: Link to ExcelUser if we want to track back to the specific user record
+    // This is nullable so EmailLog is preserved even when ExcelUser is deleted
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "excel_user_id")
+    @JoinColumn(name = "excel_user_id", nullable = true)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private ExcelUser excelUser;
 

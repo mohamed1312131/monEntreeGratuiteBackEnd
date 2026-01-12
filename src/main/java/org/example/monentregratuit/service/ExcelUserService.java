@@ -73,6 +73,24 @@ public class ExcelUserService {
                 return response;
             }
 
+            // Delete old ExcelUser data for this foire before importing new data
+            // Campaign data (EmailLog) will remain intact - we nullify the ExcelUser reference first
+            List<ExcelUser> oldUsers = excelUserRepository.findByFoireId(foireId);
+            if (!oldUsers.isEmpty()) {
+                // First, nullify ExcelUser references in EmailLog to preserve campaign history
+                for (ExcelUser user : oldUsers) {
+                    List<org.example.monentregratuit.entity.EmailLog> logs = emailLogRepository.findByExcelUserId(user.getId());
+                    for (org.example.monentregratuit.entity.EmailLog log : logs) {
+                        log.setExcelUser(null);
+                        emailLogRepository.save(log);
+                    }
+                }
+                
+                // Now safe to delete ExcelUser records
+                excelUserRepository.deleteAll(oldUsers);
+                System.out.println("Deleted " + oldUsers.size() + " old ExcelUser records for foire ID: " + foireId + " (campaign history preserved)");
+            }
+
             Workbook workbook = getWorkbook(file.getInputStream(), fileName);
             Sheet sheet = workbook.getSheetAt(0);
 
@@ -115,12 +133,8 @@ public class ExcelUserService {
                         if (emailsInCurrentUpload.contains(email)) {
                             errors.add("Row " + (i + 1) + ": Duplicate email in this file");
                             failedRows++;
-                        }
-                        // Check if email already exists in database for this foire
-                        else if (excelUserRepository.existsByEmailAndFoireId(email, foireId)) {
-                            errors.add("Row " + (i + 1) + ": Email already exists for this foire");
-                            failedRows++;
                         } else {
+                            // Save the new user (old data was already deleted)
                             excelUserRepository.save(excelUser);
                             emailsInCurrentUpload.add(email);
                             successfulRows++;

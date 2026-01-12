@@ -16,4 +16,6 @@ public interface EmailLogRepository extends JpaRepository<EmailLog, Long> {
     long countByCampaignIdAndStatus(Long campaignId, EmailLog.EmailStatus status);
     long countByCampaignIdAndOpenedTrue(Long campaignId);
     long countByCampaignIdAndClickedTrue(Long campaignId);
+    
+    List<EmailLog> findByExcelUserId(Long excelUserId);
 }
