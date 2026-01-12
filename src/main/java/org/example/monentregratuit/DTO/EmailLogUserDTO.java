@@ -18,4 +18,10 @@ public class EmailLogUserDTO {
     private LocalDateTime clickedAt;
     private int clickCount;
     private String errorMessage;
+    
+    // ExcelUser fields
+    private String date;
+    private String heure;
+    private String code;
+    private String foireName;
 }

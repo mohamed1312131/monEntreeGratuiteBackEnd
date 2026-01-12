@@ -141,6 +141,11 @@ public class EmailCampaignService {
 
     private EmailLogUserDTO convertToDTO(EmailLog log) {
         String recipientName = log.getExcelUser() != null ? log.getExcelUser().getNom() : "N/A";
+        String date = log.getExcelUser() != null ? log.getExcelUser().getDate() : null;
+        String heure = log.getExcelUser() != null ? log.getExcelUser().getHeure() : null;
+        String code = log.getExcelUser() != null ? log.getExcelUser().getCode() : null;
+        String foireName = log.getExcelUser() != null && log.getExcelUser().getFoire() != null 
+                ? log.getExcelUser().getFoire().getName() : null;
         
         return EmailLogUserDTO.builder()
                 .id(log.getId())
@@ -153,6 +158,10 @@ public class EmailCampaignService {
                 .clickedAt(log.getClickedAt())
                 .clickCount(log.getClickCount())
                 .errorMessage(log.getErrorMessage())
+                .date(date)
+                .heure(heure)
+                .code(code)
+                .foireName(foireName)
                 .build();
     }
 }
