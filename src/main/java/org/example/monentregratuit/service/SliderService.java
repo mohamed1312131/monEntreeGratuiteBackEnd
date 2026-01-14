@@ -45,6 +45,9 @@ public class SliderService {
                     if (updatedSlider.getIsActive() != null) {
                         slider.setIsActive(updatedSlider.getIsActive());
                     }
+                    if (updatedSlider.getFoire() != null) {
+                        slider.setFoire(updatedSlider.getFoire());
+                    }
                     return sliderRepository.save(slider);
                 })
                 .orElseThrow(() -> new RuntimeException("Slider not found"));
@@ -76,7 +79,7 @@ public class SliderService {
         sliderRepository.deleteById(id);
     }
 
-    public Slider createSlider(MultipartFile file) throws IOException {
+    public Slider createSlider(MultipartFile file, Long foireId) throws IOException {
         // Upload the image to Cloudinary
         Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
         String imageUrl = uploadResult.get("secure_url").toString();
@@ -86,12 +89,20 @@ public class SliderService {
         // Get the next order number
         int order = sliderRepository.findAll().size() + 1;
         
+        // Get the foire if foireId is provided
+        Foire foire = null;
+        if (foireId != null) {
+            foire = foireRepository.findById(foireId)
+                    .orElseThrow(() -> new RuntimeException("Foire not found with id: " + foireId));
+        }
+        
         // Create and save the Slider entity
         Slider slider = Slider.builder()
                 .imageUrl(imageUrl)
                 .reference(reference)
                 .order(order)
                 .isActive(false)
+                .foire(foire)
                 .build();
 
         return sliderRepository.save(slider);
@@ -115,6 +126,33 @@ public class SliderService {
         return sliderRepository.findById(id)
                 .map(slider -> {
                     slider.setOrder(order);
+                    return sliderRepository.save(slider);
+                })
+                .orElseThrow(() -> new RuntimeException("Slider not found"));
+    }
+
+    public List<Slider> getSlidersByFoire(Long foireId) {
+        return sliderRepository.findByFoireId(foireId).stream()
+                .sorted(Comparator.comparingInt(slider -> slider.getOrder() != null ? slider.getOrder() : Integer.MAX_VALUE))
+                .collect(Collectors.toList());
+    }
+
+    public List<Slider> getActiveSlidersByFoire(Long foireId) {
+        return sliderRepository.findByFoireIdAndIsActive(foireId, true).stream()
+                .sorted(Comparator.comparingInt(slider -> slider.getOrder() != null ? slider.getOrder() : Integer.MAX_VALUE))
+                .collect(Collectors.toList());
+    }
+
+    public Slider updateSliderFoire(Long id, Long foireId) {
+        return sliderRepository.findById(id)
+                .map(slider -> {
+                    if (foireId != null) {
+                        Foire foire = foireRepository.findById(foireId)
+                                .orElseThrow(() -> new RuntimeException("Foire not found with id: " + foireId));
+                        slider.setFoire(foire);
+                    } else {
+                        slider.setFoire(null);
+                    }
                     return sliderRepository.save(slider);
                 })
                 .orElseThrow(() -> new RuntimeException("Slider not found"));

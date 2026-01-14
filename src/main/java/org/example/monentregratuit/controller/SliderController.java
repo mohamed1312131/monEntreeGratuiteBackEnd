@@ -85,9 +85,10 @@ public class SliderController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createSlider(
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "foireId", required = false) Long foireId) {
         try {
-            Slider slider = sliderService.createSlider(file);
+            Slider slider = sliderService.createSlider(file, foireId);
             return ResponseEntity.ok(new SliderDTO(slider));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to create slider: " + e.getMessage());
@@ -101,6 +102,30 @@ public class SliderController {
             return ResponseEntity.ok(new SliderDTO(updated));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to update slider order: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/foire/{foireId}")
+    public List<SliderDTO> getSlidersByFoire(@PathVariable Long foireId) {
+        return sliderService.getSlidersByFoire(foireId).stream()
+                .map(SliderDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/foire/{foireId}/active")
+    public List<SliderDTO> getActiveSlidersByFoire(@PathVariable Long foireId) {
+        return sliderService.getActiveSlidersByFoire(foireId).stream()
+                .map(SliderDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    @PutMapping("/{id}/update-foire")
+    public ResponseEntity<?> updateSliderFoire(@PathVariable Long id, @RequestParam(value = "foireId", required = false) Long foireId) {
+        try {
+            Slider updated = sliderService.updateSliderFoire(id, foireId);
+            return ResponseEntity.ok(new SliderDTO(updated));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to update slider foire: " + e.getMessage());
         }
     }
 }

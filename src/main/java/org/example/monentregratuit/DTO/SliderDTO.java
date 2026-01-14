@@ -10,6 +10,8 @@ public class SliderDTO {
     private String imageUrl;
     private Integer order;
     private Boolean isActive;
+    private Long foireId;
+    private String foireName;
 
     public SliderDTO(Slider slider) {
         this.id = slider.getId();
@@ -17,5 +19,9 @@ public class SliderDTO {
         this.imageUrl = slider.getImageUrl();
         this.order = slider.getOrder();
         this.isActive = slider.getIsActive() != null ? slider.getIsActive() : false;
+        if (slider.getFoire() != null) {
+            this.foireId = slider.getFoire().getId();
+            this.foireName = slider.getFoire().getName();
+        }
     }
 }

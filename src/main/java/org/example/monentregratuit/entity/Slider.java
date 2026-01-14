@@ -22,4 +22,8 @@ public class Slider {
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "foire_id")
+    private Foire foire;
 }
