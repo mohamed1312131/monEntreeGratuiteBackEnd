@@ -106,6 +106,17 @@ public class FoireController {
     public List<Foire> getAllFoires() {
         return foireService.getAllFoires();
     }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<?> getFoireById(@PathVariable Long id) {
+        try {
+            Foire foire = foireService.getFoireById(id);
+            return ResponseEntity.ok(foire);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Foire not found with id: " + id));
+        }
+    }
     @PutMapping("/disable/{countryCode}/{id}")
     public void disableFoire(@PathVariable String countryCode, @PathVariable Long id) {
         foireService.disableFoire(countryCode, id);

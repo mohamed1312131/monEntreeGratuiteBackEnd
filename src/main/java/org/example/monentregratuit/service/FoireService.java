@@ -169,6 +169,11 @@ public class FoireService {
     public List<Foire> getAllFoires(){
         return this.foireRepository.findAll();
     }
+
+    public Foire getFoireById(Long id) {
+        return foireRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid fair ID: " + id));
+    }
     public void disableFoire(String countryCode, long id) {
         Foire foire = foireRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid fair ID: " + id));

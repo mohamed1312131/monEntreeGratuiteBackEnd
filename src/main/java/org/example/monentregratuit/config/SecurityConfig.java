@@ -72,6 +72,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/sliders/active").permitAll()
                 .requestMatchers("/api/sliders/ordered").permitAll()
                 .requestMatchers("/api/foires/{countryCode}").permitAll()
+                .requestMatchers("/api/foires/id/**").permitAll()
                 .requestMatchers("/api/foires/getAllActive/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/reservations").permitAll()  // POST for creating reservations
                 .requestMatchers("/api/settings/about-us/active").permitAll()
