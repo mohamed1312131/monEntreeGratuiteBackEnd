@@ -72,17 +72,24 @@ public class ReservationService {
         Foire foire = foireRepository.findById(reservationDTO.getFoireId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Foire ID: " + reservationDTO.getFoireId()));
         
-        // Validate selected date and time
-        if (reservationDTO.getSelectedDate() != null && reservationDTO.getSelectedTime() != null) {
-            List<Foire.DayTimeSlot> dayTimeSlots = foire.getDayTimeSlotsList();
-            boolean isValidTimeSlot = dayTimeSlots.stream()
-                .filter(daySlot -> daySlot.getDate().equals(reservationDTO.getSelectedDate()))
-                .flatMap(daySlot -> daySlot.getTimes().stream())
-                .anyMatch(timeSlot -> timeSlot.getStartTime().equals(reservationDTO.getSelectedTime()) && timeSlot.getIsEnabled());
-            
-            if (!isValidTimeSlot) {
-                throw new IllegalArgumentException("Le créneau horaire sélectionné n'est pas disponible");
-            }
+        // Validate selected date and time are required
+        if (reservationDTO.getSelectedDate() == null || reservationDTO.getSelectedDate().trim().isEmpty()) {
+            throw new IllegalArgumentException("La date de réservation est obligatoire");
+        }
+        
+        if (reservationDTO.getSelectedTime() == null || reservationDTO.getSelectedTime().trim().isEmpty()) {
+            throw new IllegalArgumentException("L'heure de réservation est obligatoire");
+        }
+        
+        // Validate selected date and time slot availability
+        List<Foire.DayTimeSlot> dayTimeSlots = foire.getDayTimeSlotsList();
+        boolean isValidTimeSlot = dayTimeSlots.stream()
+            .filter(daySlot -> daySlot.getDate().equals(reservationDTO.getSelectedDate()))
+            .flatMap(daySlot -> daySlot.getTimes().stream())
+            .anyMatch(timeSlot -> timeSlot.getStartTime().equals(reservationDTO.getSelectedTime()) && timeSlot.getIsEnabled());
+        
+        if (!isValidTimeSlot) {
+            throw new IllegalArgumentException("Le créneau horaire sélectionné n'est pas disponible");
         }
         
         // Check for duplicate email for this foire

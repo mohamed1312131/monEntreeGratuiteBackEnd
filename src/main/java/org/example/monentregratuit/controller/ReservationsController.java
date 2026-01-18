@@ -198,4 +198,35 @@ public class ReservationsController {
         return response;
     }
 
+    @GetMapping("/export-csv")
+    public ResponseEntity<String> exportReservationsToCSV() {
+        List<Reservations> reservations = reservationService.getAllReservations();
+        
+        StringBuilder csv = new StringBuilder();
+        csv.append("ID,Name,Email,Phone,City,Age Category,Selected Date,Selected Time,Status,Created At,Reservation Date,Foire ID,Foire Name\n");
+        
+        for (Reservations r : reservations) {
+            csv.append(String.format("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\"\n",
+                r.getId(),
+                r.getName() != null ? r.getName().replace("\"", "\"\"") : "",
+                r.getEmail() != null ? r.getEmail().replace("\"", "\"\"") : "",
+                r.getPhone() != null ? r.getPhone().replace("\"", "\"\"") : "",
+                r.getCity() != null ? r.getCity().replace("\"", "\"\"") : "",
+                r.getAgeCategory() != null ? r.getAgeCategory().toString() : "",
+                r.getSelectedDate() != null ? r.getSelectedDate() : "NULL",
+                r.getSelectedTime() != null ? r.getSelectedTime() : "NULL",
+                r.getStatus() != null ? r.getStatus().toString() : "",
+                r.getCreatedAt() != null ? r.getCreatedAt().toString() : "",
+                r.getReservationDate() != null ? r.getReservationDate().toString() : "",
+                r.getFoire() != null ? r.getFoire().getId() : 0,
+                r.getFoire() != null && r.getFoire().getName() != null ? r.getFoire().getName().replace("\"", "\"\"") : ""
+            ));
+        }
+        
+        return ResponseEntity.ok()
+            .header("Content-Type", "text/csv; charset=UTF-8")
+            .header("Content-Disposition", "attachment; filename=reservations_export.csv")
+            .body(csv.toString());
+    }
+
 }
