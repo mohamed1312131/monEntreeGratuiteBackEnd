@@ -169,6 +169,10 @@ public class FoireService {
     public List<Foire> getAllFoires(){
         return this.foireRepository.findAll();
     }
+    public Foire getFoireByName(String name) {
+    return foireRepository.findByName(name)
+            .orElseThrow(() -> new IllegalArgumentException("Foire not found with name: " + name));
+}
 
     public Foire getFoireById(Long id) {
         return foireRepository.findById(id)

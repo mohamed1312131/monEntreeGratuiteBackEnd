@@ -106,6 +106,16 @@ public class FoireController {
     public List<Foire> getAllFoires() {
         return foireService.getAllFoires();
     }
+    @GetMapping("/name/{name}")
+    public ResponseEntity<?> getFoireByName(@PathVariable String name) {
+        try {
+            Foire foire = foireService.getFoireByName(name);
+            return ResponseEntity.ok(foire);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "Foire not found with name: " + name));
+        }
+    }
 
     @GetMapping("/id/{id}")
     public ResponseEntity<?> getFoireById(@PathVariable Long id) {

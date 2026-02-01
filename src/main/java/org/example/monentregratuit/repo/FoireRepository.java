@@ -13,4 +13,5 @@ public interface FoireRepository extends JpaRepository<Foire,Long> {
     List<Foire> findByCountryCode(CountryCode countryCode);
     List<Foire> findByCountryCodeAndIsActiveTrue(CountryCode countryCode);
     List<Foire> findByDateBetween(LocalDateTime start, LocalDateTime end);
+    Optional<Foire> findByName(String name);
 }
