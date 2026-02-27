@@ -17,6 +17,7 @@ public class ResRevDTO {
     private String city;
     private String email;
     private String phone;
+    private String interests;
     private String selectedDate;
     private String selectedTime;
     private String reservationDate;

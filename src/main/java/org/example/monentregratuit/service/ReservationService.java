@@ -112,6 +112,17 @@ public class ReservationService {
         reservation.setEmail(reservationDTO.getEmail());
         reservation.setPhone(reservationDTO.getPhone());
         reservation.setAgeCategory(reservationDTO.getAgeCategory());
+        
+        // Convert interests list to JSON string for storage
+        if (reservationDTO.getInterests() != null && !reservationDTO.getInterests().isEmpty()) {
+            try {
+                reservation.setInterests(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(reservationDTO.getInterests()));
+            } catch (Exception e) {
+                System.err.println("Failed to serialize interests: " + e.getMessage());
+                reservation.setInterests(null);
+            }
+        }
+        
         reservation.setSelectedDate(reservationDTO.getSelectedDate());
         reservation.setSelectedTime(reservationDTO.getSelectedTime());
         reservation.setCreatedAt(LocalDateTime.now());
@@ -191,6 +202,7 @@ public class ReservationService {
         dto.setCity(reservation.getCity());
         dto.setEmail(reservation.getEmail());
         dto.setPhone(reservation.getPhone());
+        dto.setInterests(reservation.getInterests());
         dto.setSelectedDate(reservation.getSelectedDate());
         dto.setSelectedTime(reservation.getSelectedTime());
         dto.setAgeCategory(reservation.getAgeCategory());

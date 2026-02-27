@@ -16,6 +16,7 @@ public class ReservationsDTO {
     private String telephone;
     private String trancheAge;
     private AgeCategory ageCategory;
+    private java.util.List<String> interests;
     private String selectedDate;
     private String selectedTime;
     private String recaptchaToken;

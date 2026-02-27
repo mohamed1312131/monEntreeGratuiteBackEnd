@@ -35,6 +35,9 @@ public class Reservations {
 
     private String phone; // Phone number for contact
 
+    @Column(name = "interests", columnDefinition = "TEXT")
+    private String interests; // JSON array of user interests (nullable for backward compatibility)
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AgeCategory ageCategory; // Instead of raw age numbers

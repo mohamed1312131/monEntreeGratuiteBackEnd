@@ -203,15 +203,16 @@ public class ReservationsController {
         List<Reservations> reservations = reservationService.getAllReservations();
         
         StringBuilder csv = new StringBuilder();
-        csv.append("ID,Name,Email,Phone,City,Age Category,Selected Date,Selected Time,Status,Created At,Reservation Date,Foire ID,Foire Name\n");
+        csv.append("ID,Name,Email,Phone,City,Interests,Age Category,Selected Date,Selected Time,Status,Created At,Reservation Date,Foire ID,Foire Name\n");
         
         for (Reservations r : reservations) {
-            csv.append(String.format("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\"\n",
+            csv.append(String.format("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\"\n",
                 r.getId(),
                 r.getName() != null ? r.getName().replace("\"", "\"\"") : "",
                 r.getEmail() != null ? r.getEmail().replace("\"", "\"\"") : "",
                 r.getPhone() != null ? r.getPhone().replace("\"", "\"\"") : "",
                 r.getCity() != null ? r.getCity().replace("\"", "\"\"") : "",
+                r.getInterests() != null ? r.getInterests().replace("\"", "\"\"") : "",
                 r.getAgeCategory() != null ? r.getAgeCategory().toString() : "",
                 r.getSelectedDate() != null ? r.getSelectedDate() : "NULL",
                 r.getSelectedTime() != null ? r.getSelectedTime() : "NULL",
