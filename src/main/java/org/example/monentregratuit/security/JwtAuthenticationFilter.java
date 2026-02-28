@@ -87,7 +87,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (path.startsWith("/api/health")) return true;
         if (path.equals("/api/sliders/active")) return true;
         if (path.equals("/api/sliders/ordered")) return true;
+        
+        // Foires public endpoints
         if (path.startsWith("/api/foires/getAllActive")) return true;
+        if (path.matches("/api/foires/[A-Z]{2}")) return true; // Country code endpoints like /api/foires/FR
+        if (path.startsWith("/api/foires/id/")) return true;
+        if (path.startsWith("/api/foires/name/")) return true;
+        
         if (path.equals("/api/settings/about-us/active")) return true;
         if (path.equals("/api/settings/videos/active")) return true;
         if (path.equals("/api/settings/social-links")) return true;
@@ -100,6 +106,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // Public visit tracking endpoint
         if (path.equals("/api/visits/track") && "POST".equalsIgnoreCase(method)) return true;
+        
+        // Email tracking endpoints
+        if (path.startsWith("/api/track/")) return true;
         
         // Public template viewer by slug - no auth required
         if (path.startsWith("/api/custom-templates/slug/") && "GET".equalsIgnoreCase(method)) return true;
