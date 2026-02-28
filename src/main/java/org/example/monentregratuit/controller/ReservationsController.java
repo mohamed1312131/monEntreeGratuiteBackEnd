@@ -212,7 +212,7 @@ public class ReservationsController {
                 r.getEmail() != null ? r.getEmail().replace("\"", "\"\"") : "",
                 r.getPhone() != null ? r.getPhone().replace("\"", "\"\"") : "",
                 r.getCity() != null ? r.getCity().replace("\"", "\"\"") : "",
-                r.getInterests() != null ? r.getInterests().replace("\"", "\"\"") : "",
+                formatInterestsForCsv(r.getInterests()),
                 r.getAgeCategory() != null ? r.getAgeCategory().toString() : "",
                 r.getSelectedDate() != null ? r.getSelectedDate() : "NULL",
                 r.getSelectedTime() != null ? r.getSelectedTime() : "NULL",
@@ -228,6 +228,41 @@ public class ReservationsController {
             .header("Content-Type", "text/csv; charset=UTF-8")
             .header("Content-Disposition", "attachment; filename=reservations_export.csv")
             .body(csv.toString());
+    }
+    
+    private String formatInterestsForCsv(String interestsJson) {
+        if (interestsJson == null || interestsJson.isEmpty()) {
+            return "";
+        }
+        
+        try {
+            // Remove brackets and quotes from JSON array
+            String cleaned = interestsJson.replace("[", "").replace("]", "").replace("\"", "");
+            String[] interests = cleaned.split(",");
+            
+            // Map to readable labels
+            java.util.Map<String, String> labels = new java.util.HashMap<>();
+            labels.put("habitat_construction", "Habitat & Construction");
+            labels.put("amenagement_interieur", "Aménagement Intérieur");
+            labels.put("exterieurs_jardin", "Extérieurs & Jardin");
+            labels.put("energies_confort", "Énergies & Confort");
+            labels.put("gastronomie_terroir", "Gastronomie & Terroir");
+            labels.put("loisirs_bien_etre", "Loisirs & Bien-être");
+            
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < interests.length; i++) {
+                String interest = interests[i].trim();
+                String label = labels.getOrDefault(interest, interest);
+                result.append(label);
+                if (i < interests.length - 1) {
+                    result.append("; ");
+                }
+            }
+            
+            return result.toString().replace("\"", "\"\"");
+        } catch (Exception e) {
+            return interestsJson.replace("\"", "\"\"");
+        }
     }
 
 }
