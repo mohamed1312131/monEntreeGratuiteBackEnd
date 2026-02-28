@@ -61,17 +61,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             System.out.println("Validating token for user: " + username);
-            if (jwtUtil.validateToken(jwt, username)) {
-                System.out.println("Token valid - setting authentication");
-                // Create authentication with ADMIN authority
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(username, null, 
-                            java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN")));
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("Authentication set successfully");
-            } else {
-                System.err.println("Token validation failed for user: " + username);
+            try {
+                if (jwtUtil.validateToken(jwt, username)) {
+                    System.out.println("Token valid - setting authentication");
+                    // Create authentication with ADMIN authority
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(username, null, 
+                                java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN")));
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("Authentication set successfully for user: " + username);
+                } else {
+                    System.err.println("Token validation failed for user: " + username);
+                }
+            } catch (Exception e) {
+                System.err.println("Exception during token validation: " + e.getMessage());
+                e.printStackTrace();
             }
         } else {
             System.out.println("Skipping authentication - username: " + username + ", existing auth: " + (SecurityContextHolder.getContext().getAuthentication() != null));
