@@ -64,7 +64,12 @@ public class UserVisitService {
         List<Object[]> results = repository.countByCountry();
         Map<String, Long> countryStats = new HashMap<>();
         for (Object[] result : results) {
-            countryStats.put((String) result[0], (Long) result[1]);
+            String country = (String) result[0];
+            if (country != null) {
+                countryStats.put(country, (Long) result[1]);
+            } else {
+                countryStats.put("Unknown", (Long) result[1]);
+            }
         }
         return countryStats;
     }
@@ -73,7 +78,12 @@ public class UserVisitService {
         List<Object[]> results = repository.countByCountryAndYear(year);
         Map<String, Long> countryStats = new HashMap<>();
         for (Object[] result : results) {
-            countryStats.put((String) result[0], (Long) result[1]);
+            String country = (String) result[0];
+            if (country != null) {
+                countryStats.put(country, (Long) result[1]);
+            } else {
+                countryStats.put("Unknown", (Long) result[1]);
+            }
         }
         return countryStats;
     }
