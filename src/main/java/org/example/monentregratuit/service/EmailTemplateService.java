@@ -344,6 +344,9 @@ public class EmailTemplateService {
             throw new RuntimeException("Cannot send email to " + to + ": Email is in blocklist (user unsubscribed)");
         }
         
+        String unsubscribeUrl = frontendUrl + "/unsubscribe?email=" + java.net.URLEncoder.encode(to, java.nio.charset.StandardCharsets.UTF_8);
+        htmlContent = htmlContent.replace("{{UNSUBSCRIBE_LINK}}", unsubscribeUrl);
+
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setFrom(mailUsername, "Reservation");
