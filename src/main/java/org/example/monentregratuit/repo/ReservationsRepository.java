@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReservationsRepository extends JpaRepository<Reservations, Long> {
@@ -46,5 +47,7 @@ public interface ReservationsRepository extends JpaRepository<Reservations, Long
 
     // Count reservations by status
     long countByStatus(ReservationStatus status);
+
+    Optional<Reservations> findFirstByEmailOrderByCreatedAtDesc(String email);
 
 }
