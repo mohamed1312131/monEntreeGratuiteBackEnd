@@ -26,7 +26,7 @@ public class PublicUnsubscribeController {
             subscriberService.unsubscribe(token, reason != null ? reason : "User requested unsubscribe", request);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "You have been successfully unsubscribed from our newsletter."
+                "message", "Vous avez bien été désinscrit de notre newsletter."
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -45,7 +45,7 @@ public class PublicUnsubscribeController {
             blocklistService.blockEmail(email, reason != null ? reason : "User unsubscribed", request);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "You have been successfully unsubscribed. You will not receive any further emails from us."
+                "message", "Vous avez bien été désinscrit. Vous ne recevrez plus aucun email de notre part."
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -65,7 +65,7 @@ public class PublicUnsubscribeController {
             subscriberService.unsubscribe(token, reason, request);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "You have been successfully unsubscribed from our newsletter."
+                "message", "Vous avez bien été désinscrit de notre newsletter."
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -91,7 +91,7 @@ public class PublicUnsubscribeController {
             blocklistService.blockEmail(email, reason != null ? reason : "User unsubscribed", request);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "You have been successfully unsubscribed. You will not receive any further emails from us."
+                "message", "Vous avez bien été désinscrit. Vous ne recevrez plus aucun email de notre part."
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
