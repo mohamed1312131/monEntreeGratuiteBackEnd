@@ -248,6 +248,12 @@ public class ReservationsController {
             labels.put("energies_confort", "Énergies & Confort");
             labels.put("gastronomie_terroir", "Gastronomie & Terroir");
             labels.put("loisirs_bien_etre", "Loisirs & Bien-être");
+            labels.put("piscine_spa_exterieur", "Piscine, Spa & Aménagement Extérieur");
+            labels.put("renovation_menuiserie_isolation", "Rénovation, Menuiserie & Isolation");
+            labels.put("cuisine_bain_design", "Cuisine, Bain & Design Intérieur");
+            labels.put("energies_renouvelables_chauffage", "Énergies Renouvelables & Chauffage");
+            labels.put("mobilite_vehicules_loisirs", "Mobilité & Véhicules de Loisirs");
+            labels.put("visite_simple", "Visite simple");
             
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < interests.length; i++) {
