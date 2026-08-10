@@ -1,6 +1,7 @@
 package org.example.monentregratuit.controller;
 
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import org.example.monentregratuit.DTO.ResRevDTO;
 import org.example.monentregratuit.DTO.ReservationsDTO;
 import org.example.monentregratuit.entity.ReservationStatus;
@@ -50,8 +51,10 @@ public class ReservationsController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createReservation(@Valid @RequestBody ReservationsDTO reservationDTO) {
+    public ResponseEntity<?> createReservation(@Valid @RequestBody ReservationsDTO reservationDTO, HttpServletRequest request) {
         try {
+            reservationDTO.setIpAddress(resolveClientIpAddress(request));
+
             // Validate reCAPTCHA if token is provided
             String recaptchaToken = reservationDTO.getRecaptchaToken();
             if (recaptchaToken != null && !recaptchaToken.isEmpty()) {
@@ -203,14 +206,15 @@ public class ReservationsController {
         List<Reservations> reservations = reservationService.getAllReservations();
         
         StringBuilder csv = new StringBuilder();
-        csv.append("ID,Name,Email,Phone,City,Interests,Age Category,Selected Date,Selected Time,Status,Created At,Reservation Date,Foire ID,Foire Name\n");
+        csv.append("ID,Name,Email,Phone,IP Address,City,Interests,Age Category,Selected Date,Selected Time,Status,Created At,Reservation Date,Foire ID,Foire Name\n");
         
         for (Reservations r : reservations) {
-            csv.append(String.format("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\"\n",
+            csv.append(String.format("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\"\n",
                 r.getId(),
                 r.getName() != null ? r.getName().replace("\"", "\"\"") : "",
                 r.getEmail() != null ? r.getEmail().replace("\"", "\"\"") : "",
                 r.getPhone() != null ? r.getPhone().replace("\"", "\"\"") : "",
+                r.getIpAddress() != null ? r.getIpAddress().replace("\"", "\"\"") : "",
                 r.getCity() != null ? r.getCity().replace("\"", "\"\"") : "",
                 formatInterestsForCsv(r.getInterests()),
                 r.getAgeCategory() != null ? r.getAgeCategory().toString() : "",
@@ -228,6 +232,63 @@ public class ReservationsController {
             .header("Content-Type", "text/csv; charset=UTF-8")
             .header("Content-Disposition", "attachment; filename=reservations_export.csv")
             .body(csv.toString());
+    }
+
+    private String resolveClientIpAddress(HttpServletRequest request) {
+        String[] headerNames = {
+            "CF-Connecting-IP",
+            "X-Forwarded-For",
+            "X-Real-IP",
+            "Forwarded"
+        };
+
+        for (String headerName : headerNames) {
+            String value = request.getHeader(headerName);
+            String ipAddress = extractIpFromHeader(headerName, value);
+            if (ipAddress != null) {
+                return ipAddress;
+            }
+        }
+
+        return normalizeIpAddress(request.getRemoteAddr());
+    }
+
+    private String extractIpFromHeader(String headerName, String value) {
+        if (value == null || value.trim().isEmpty() || "unknown".equalsIgnoreCase(value.trim())) {
+            return null;
+        }
+
+        String candidate = value;
+        if ("X-Forwarded-For".equalsIgnoreCase(headerName)) {
+            candidate = value.split(",")[0];
+        } else if ("Forwarded".equalsIgnoreCase(headerName)) {
+            String firstForwardedEntry = value.split(",")[0];
+            for (String part : firstForwardedEntry.split(";")) {
+                String trimmedPart = part.trim();
+                if (trimmedPart.toLowerCase().startsWith("for=")) {
+                    candidate = trimmedPart.substring(4);
+                    break;
+                }
+            }
+        }
+
+        return normalizeIpAddress(candidate);
+    }
+
+    private String normalizeIpAddress(String ipAddress) {
+        if (ipAddress == null) {
+            return null;
+        }
+
+        String normalized = ipAddress.trim().replace("\"", "");
+        if (normalized.startsWith("[") && normalized.contains("]")) {
+            normalized = normalized.substring(1, normalized.indexOf("]"));
+        }
+        if (normalized.isEmpty() || "unknown".equalsIgnoreCase(normalized)) {
+            return null;
+        }
+
+        return normalized.length() <= 45 ? normalized : normalized.substring(0, 45);
     }
     
     private String formatInterestsForCsv(String interestsJson) {
@@ -254,6 +315,17 @@ public class ReservationsController {
             labels.put("energies_renouvelables_chauffage", "Énergies Renouvelables & Chauffage");
             labels.put("mobilite_vehicules_loisirs", "Mobilité & Véhicules de Loisirs");
             labels.put("visite_simple", "Visite simple");
+            labels.put("equipement_cuisine_gastronomie", "Équipement de cuisine & Gastronomie");
+            labels.put("amenagement_exterieur_mobilier", "Aménagement extérieur & Mobilier");
+            labels.put("parcs_jardins_espaces_verts", "Parcs, Jardins & Espaces verts");
+            labels.put("visite_generale_culture_rurale", "Visite générale & Culture rurale");
+            labels.put("habitat_ameublement_renovation", "Habitat, Ameublement & Rénovation");
+            labels.put("amenagement_exterieur_mobilier_jardin", "Aménagement extérieur & Mobilier de jardin");
+            labels.put("jardins_paysagisme_espaces_verts", "Jardins, Paysagisme & Espaces verts");
+            labels.put("mobilites_auto_moto", "Mobilités & Auto-Moto");
+            labels.put("artisanat_monde_decoration", "Artisanat du monde & Décoration");
+            labels.put("village_international_culture", "Village International & Culture");
+            labels.put("visite_generale_ambiance_foire", "Visite générale & Ambiance foire");
             
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < interests.length; i++) {

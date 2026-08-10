@@ -111,6 +111,7 @@ public class ReservationService {
         reservation.setCity(reservationDTO.getCity());
         reservation.setEmail(reservationDTO.getEmail());
         reservation.setPhone(reservationDTO.getPhone());
+        reservation.setIpAddress(reservationDTO.getIpAddress());
         reservation.setAgeCategory(reservationDTO.getAgeCategory());
         
         // Convert interests list to JSON string for storage
@@ -202,6 +203,7 @@ public class ReservationService {
         dto.setCity(reservation.getCity());
         dto.setEmail(reservation.getEmail());
         dto.setPhone(reservation.getPhone());
+        dto.setIpAddress(reservation.getIpAddress());
         dto.setInterests(reservation.getInterests());
         dto.setSelectedDate(reservation.getSelectedDate());
         dto.setSelectedTime(reservation.getSelectedTime());

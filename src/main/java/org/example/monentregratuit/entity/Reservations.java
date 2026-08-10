@@ -35,6 +35,9 @@ public class Reservations {
 
     private String phone; // Phone number for contact
 
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress; // Submitter IP address captured server-side
+
     @Column(name = "interests", columnDefinition = "TEXT")
     private String interests; // JSON array of user interests (nullable for backward compatibility)
 

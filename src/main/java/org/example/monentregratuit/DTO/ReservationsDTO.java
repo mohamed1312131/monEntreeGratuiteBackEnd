@@ -14,6 +14,7 @@ public class ReservationsDTO {
     private String smsNumber;
     private String email;
     private String telephone;
+    private String ipAddress;
     private String trancheAge;
     private AgeCategory ageCategory;
     private java.util.List<String> interests;
