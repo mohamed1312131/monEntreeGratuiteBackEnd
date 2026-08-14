@@ -23,6 +23,9 @@ import java.util.stream.IntStream;
 @Service
 public class ReservationService {
 
+    private static final String TERMS_VERSION = "2026-08-12";
+    private static final String PRIVACY_POLICY_VERSION = "2026-08-11";
+
     private final ReservationsRepository reservationRepository;
     private final FoireRepository foireRepository;
     private final EmailTemplateService emailService;
@@ -71,6 +74,14 @@ public class ReservationService {
     public Reservations createReservation(ReservationsDTO reservationDTO) {
         Foire foire = foireRepository.findById(reservationDTO.getFoireId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Foire ID: " + reservationDTO.getFoireId()));
+
+        if (!Boolean.TRUE.equals(reservationDTO.getPhoneContactConsent())) {
+            throw new IllegalArgumentException("Le consentement au contact téléphonique est obligatoire");
+        }
+
+        if (!Boolean.TRUE.equals(reservationDTO.getTermsAccepted())) {
+            throw new IllegalArgumentException("L'acceptation des conditions générales est obligatoire");
+        }
         
         // Validate selected date and time are required
         if (reservationDTO.getSelectedDate() == null || reservationDTO.getSelectedDate().trim().isEmpty()) {
@@ -123,6 +134,14 @@ public class ReservationService {
                 reservation.setInterests(null);
             }
         }
+
+        reservation.setPhoneContactConsent(reservationDTO.getPhoneContactConsent());
+        reservation.setPartnerDataSharingConsent(reservationDTO.getPartnerDataSharingConsent());
+        reservation.setMarketingConsent(reservationDTO.getMarketingConsent());
+        reservation.setTermsAccepted(reservationDTO.getTermsAccepted());
+        reservation.setConsentCapturedAt(LocalDateTime.now());
+        reservation.setTermsVersion(TERMS_VERSION);
+        reservation.setPrivacyPolicyVersion(PRIVACY_POLICY_VERSION);
         
         reservation.setSelectedDate(reservationDTO.getSelectedDate());
         reservation.setSelectedTime(reservationDTO.getSelectedTime());
@@ -205,6 +224,15 @@ public class ReservationService {
         dto.setPhone(reservation.getPhone());
         dto.setIpAddress(reservation.getIpAddress());
         dto.setInterests(reservation.getInterests());
+        dto.setPhoneContactConsent(reservation.getPhoneContactConsent());
+        dto.setPartnerDataSharingConsent(reservation.getPartnerDataSharingConsent());
+        dto.setMarketingConsent(reservation.getMarketingConsent());
+        dto.setTermsAccepted(reservation.getTermsAccepted());
+        dto.setTermsVersion(reservation.getTermsVersion());
+        dto.setPrivacyPolicyVersion(reservation.getPrivacyPolicyVersion());
+        if (reservation.getConsentCapturedAt() != null) {
+            dto.setConsentCapturedAt(reservation.getConsentCapturedAt().toString());
+        }
         dto.setSelectedDate(reservation.getSelectedDate());
         dto.setSelectedTime(reservation.getSelectedTime());
         dto.setAgeCategory(reservation.getAgeCategory());

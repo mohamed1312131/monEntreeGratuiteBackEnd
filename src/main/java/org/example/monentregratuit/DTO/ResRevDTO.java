@@ -19,6 +19,13 @@ public class ResRevDTO {
     private String phone;
     private String ipAddress;
     private String interests;
+    private Boolean phoneContactConsent;
+    private Boolean partnerDataSharingConsent;
+    private Boolean marketingConsent;
+    private Boolean termsAccepted;
+    private String consentCapturedAt;
+    private String termsVersion;
+    private String privacyPolicyVersion;
     private String selectedDate;
     private String selectedTime;
     private String reservationDate;

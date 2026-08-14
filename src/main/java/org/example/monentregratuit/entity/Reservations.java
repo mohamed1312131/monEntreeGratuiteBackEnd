@@ -41,6 +41,28 @@ public class Reservations {
     @Column(name = "interests", columnDefinition = "TEXT")
     private String interests; // JSON array of user interests (nullable for backward compatibility)
 
+    // Nullable so reservations created before consent tracking remain distinguishable as unknown.
+    @Column(name = "phone_contact_consent")
+    private Boolean phoneContactConsent;
+
+    @Column(name = "partner_data_sharing_consent")
+    private Boolean partnerDataSharingConsent;
+
+    @Column(name = "marketing_consent")
+    private Boolean marketingConsent;
+
+    @Column(name = "terms_accepted")
+    private Boolean termsAccepted;
+
+    @Column(name = "consent_captured_at")
+    private LocalDateTime consentCapturedAt;
+
+    @Column(name = "terms_version", length = 32)
+    private String termsVersion;
+
+    @Column(name = "privacy_policy_version", length = 32)
+    private String privacyPolicyVersion;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AgeCategory ageCategory; // Instead of raw age numbers

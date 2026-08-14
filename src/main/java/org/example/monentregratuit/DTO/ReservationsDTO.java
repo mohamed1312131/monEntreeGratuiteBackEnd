@@ -21,6 +21,12 @@ public class ReservationsDTO {
     private String selectedDate;
     private String selectedTime;
     private String recaptchaToken;
+
+    // Consent choices captured when the reservation is submitted.
+    private Boolean phoneContactConsent;
+    private Boolean partnerDataSharingConsent;
+    private Boolean marketingConsent;
+    private Boolean termsAccepted;
     
     // Legacy fields for backward compatibility
     private String name;
