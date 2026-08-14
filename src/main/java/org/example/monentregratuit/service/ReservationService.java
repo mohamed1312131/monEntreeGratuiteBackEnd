@@ -205,7 +205,15 @@ public class ReservationService {
     }
 
     public List<ResRevDTO> getAllReservationsDTO() {
-        return reservationRepository.findAll().stream()
+        return getAllReservationsDTO(null);
+    }
+
+    public List<ResRevDTO> getAllReservationsDTO(Long foireId) {
+        List<Reservations> reservations = foireId == null
+                ? reservationRepository.findAllByOrderByCreatedAtDesc()
+                : reservationRepository.findByFoireIdOrderByCreatedAtDesc(foireId);
+
+        return reservations.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

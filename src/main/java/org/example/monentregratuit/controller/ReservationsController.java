@@ -158,8 +158,8 @@ public class ReservationsController {
     }
 
     @GetMapping("/GetAll")
-    public List<ResRevDTO> getAllReservationsDTO() {
-        return reservationService.getAllReservationsDTO();
+    public List<ResRevDTO> getAllReservationsDTO(@RequestParam(required = false) Long foireId) {
+        return reservationService.getAllReservationsDTO(foireId);
     }
     @PutMapping("/{id}/status")
     public ResponseEntity<Reservations> updateReservationStatus(@PathVariable Long id, @RequestParam ReservationStatus status) {

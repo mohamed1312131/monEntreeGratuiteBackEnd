@@ -33,6 +33,10 @@ public interface ReservationsRepository extends JpaRepository<Reservations, Long
 
     List<Reservations> findByFoireId(Long foireId);
 
+    List<Reservations> findAllByOrderByCreatedAtDesc();
+
+    List<Reservations> findByFoireIdOrderByCreatedAtDesc(Long foireId);
+
     @Query("SELECT r.ageCategory, COUNT(r) FROM Reservations r WHERE r.foire.id = :foireId GROUP BY r.ageCategory")
     List<Object[]> countByFoireIdGroupByAgeCategory(Long foireId);
 
